@@ -1,0 +1,1818 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>数字乐园 - UI 设计稿</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #FF6B6B;
+      --primary-light: #FF8A8A;
+      --primary-dark: #E85555;
+      --secondary: #4ECDC4;
+      --accent: #FFE66D;
+      --background: #FFF9F0;
+      --surface: #FFFFFF;
+      --text-primary: #2D3436;
+      --text-secondary: #636E72;
+      --text-light: #B2BEC3;
+      
+      --game-blue: #4A90E2;
+      --game-blue-light: #6BA3E8;
+      --game-orange: #F5A623;
+      --game-orange-light: #F7B84D;
+      --game-green: #7ED321;
+      --game-green-light: #96DC4E;
+      --game-purple: #9013FE;
+      --game-purple-light: #A842FE;
+      
+      --radius-sm: 12px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --radius-xl: 32px;
+      --radius-full: 9999px;
+      
+      --shadow-sm: 0 4px 12px rgba(0,0,0,0.08);
+      --shadow-md: 0 8px 24px rgba(0,0,0,0.12);
+      --shadow-lg: 0 12px 40px rgba(0,0,0,0.16);
+      --shadow-glow: 0 0 30px rgba(255,107,107,0.3);
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--background);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    .phone-frame {
+      width: 375px;
+      height: 812px;
+      background: var(--background);
+      border-radius: 40px;
+      overflow: hidden;
+      box-shadow: var(--shadow-lg), 0 0 0 12px #1a1a1a;
+      position: relative;
+      margin: 20px;
+    }
+    
+    .screen {
+      width: 100%;
+      height: 100%;
+      display: none;
+      flex-direction: column;
+      position: relative;
+    }
+    
+    .screen.active {
+      display: flex;
+    }
+    
+    .status-bar {
+      height: 44px;
+      padding: 12px 24px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    .status-icons {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 20px 100px;
+    }
+    
+    .tab-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 80px;
+      background: var(--surface);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding-bottom: 20px;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+    }
+    
+    .tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    
+    .tab-item:active {
+      transform: scale(0.95);
+    }
+    
+    .tab-icon {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      opacity: 0.5;
+      transition: all 0.2s;
+    }
+    
+    .tab-item.active .tab-icon {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+    
+    .tab-label {
+      font-size: 11px;
+      font-weight: 600;
+      opacity: 0.5;
+    }
+    
+    .tab-item.active .tab-label {
+      opacity: 1;
+      color: var(--primary);
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+    }
+    
+    .logo {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .avatar-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--primary-light));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      cursor: pointer;
+      transition: transform 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .avatar-btn:active {
+      transform: scale(0.95);
+    }
+    
+    .welcome-card {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      margin-bottom: 24px;
+      color: white;
+      box-shadow: var(--shadow-glow);
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    
+    .welcome-title {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+    
+    .welcome-name {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    
+    .stats-row {
+      display: flex;
+      justify-content: space-around;
+    }
+    
+    .stat-item {
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+    
+    .section-title {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+    }
+    
+    .games-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .game-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: 20px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .game-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+    }
+    
+    .game-card.count::before { background: var(--game-blue); }
+    .game-card.match::before { background: var(--game-orange); }
+    .game-card.sequence::before { background: var(--game-green); }
+    .game-card.addition::before { background: var(--game-purple); }
+    
+    .game-card:active {
+      transform: scale(0.98);
+    }
+    
+    .game-icon {
+      font-size: 48px;
+      margin-bottom: 8px;
+    }
+    
+    .game-name {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .game-stars {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+    }
+    
+    .star {
+      font-size: 16px;
+    }
+    
+    .star.filled {
+      color: var(--accent);
+    }
+    
+    .star.empty {
+      color: var(--text-light);
+    }
+    
+    .achievement-card {
+      background: linear-gradient(135deg, var(--game-purple), var(--game-purple-light));
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      transition: transform 0.2s;
+      box-shadow: var(--shadow-md);
+    }
+    
+    .achievement-card:active {
+      transform: scale(0.98);
+    }
+    
+    .achievement-icon {
+      font-size: 32px;
+    }
+    
+    .achievement-info {
+      flex: 1;
+      color: white;
+    }
+    
+    .achievement-title {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .achievement-desc {
+      font-size: 13px;
+      opacity: 0.9;
+    }
+    
+    .achievement-badges {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .badge-icon {
+      font-size: 24px;
+    }
+    
+    .game-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+    }
+    
+    .back-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s;
+    }
+    
+    .back-btn:active {
+      transform: scale(0.95);
+    }
+    
+    .game-title {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .game-title.count { color: var(--game-blue); }
+    .game-title.match { color: var(--game-orange); }
+    .game-title.sequence { color: var(--game-green); }
+    .game-title.addition { color: var(--game-purple); }
+    
+    .stars-display {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--surface);
+      padding: 8px 16px;
+      border-radius: var(--radius-full);
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .stars-display .star {
+      font-size: 20px;
+    }
+    
+    .target-card {
+      background: linear-gradient(135deg, var(--game-blue), var(--game-blue-light));
+      border-radius: var(--radius-xl);
+      padding: 32px 24px;
+      text-align: center;
+      color: white;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 30px rgba(74, 144, 226, 0.3);
+    }
+    
+    .target-label {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+    
+    .target-number {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 120px;
+      font-weight: 700;
+      line-height: 1;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    
+    .target-hint {
+      font-size: 16px;
+      margin-top: 16px;
+      opacity: 0.9;
+    }
+    
+    .items-area {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    
+    .count-item {
+      width: 72px;
+      height: 72px;
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .count-item:active {
+      transform: scale(0.9);
+    }
+    
+    .count-item.clicked {
+      background: var(--game-green);
+      transform: scale(0.9);
+      box-shadow: 0 4px 20px rgba(126, 211, 33, 0.4);
+    }
+    
+    .count-item.clicked::after {
+      content: '✓';
+      position: absolute;
+      font-size: 24px;
+      color: white;
+    }
+    
+    .current-count {
+      text-align: center;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 24px;
+      color: var(--text-secondary);
+    }
+    
+    .current-count span {
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--game-blue);
+    }
+    
+    .match-area {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      padding: 16px 0;
+    }
+    
+    .numbers-row {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    
+    .number-card {
+      width: 64px;
+      height: 64px;
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      cursor: grab;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s;
+      border: 3px solid transparent;
+    }
+    
+    .number-card:active {
+      transform: scale(1.1);
+      border-color: var(--game-orange);
+    }
+    
+    .number-card.matched {
+      background: var(--game-green);
+      color: white;
+      cursor: default;
+    }
+    
+    .items-row {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    
+    .match-target {
+      width: 80px;
+      height: 80px;
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      border: 3px dashed var(--text-light);
+      transition: all 0.2s;
+    }
+    
+    .match-target.matched {
+      border-style: solid;
+      border-color: var(--game-green);
+      background: rgba(126, 211, 33, 0.1);
+    }
+    
+    .match-target-items {
+      font-size: 24px;
+    }
+    
+    .match-target-count {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    
+    .sequence-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      padding: 24px;
+    }
+    
+    .sequence-btn {
+      aspect-ratio: 1;
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s;
+    }
+    
+    .sequence-btn:active {
+      transform: scale(0.95);
+    }
+    
+    .sequence-btn.correct {
+      background: var(--game-green);
+      color: white;
+      animation: pop 0.3s ease;
+    }
+    
+    .sequence-btn.wrong {
+      animation: shake 0.3s ease;
+    }
+    
+    .sequence-btn.next {
+      border: 3px solid var(--game-green);
+      box-shadow: 0 0 20px rgba(126, 211, 33, 0.4);
+    }
+    
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
+    }
+    
+    .progress-hint {
+      text-align: center;
+      padding: 16px;
+      font-size: 18px;
+      color: var(--text-secondary);
+    }
+    
+    .progress-hint span {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--game-green);
+    }
+    
+    .addition-story {
+      background: linear-gradient(135deg, var(--game-purple), var(--game-purple-light));
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      color: white;
+      margin-bottom: 24px;
+      text-align: center;
+      box-shadow: 0 8px 30px rgba(144, 19, 254, 0.3);
+    }
+    
+    .story-text {
+      font-size: 18px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    
+    .story-emoji {
+      font-size: 32px;
+      margin: 0 4px;
+    }
+    
+    .addition-groups {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 24px;
+    }
+    
+    .addition-group {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      text-align: center;
+      min-width: 140px;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .group-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+    
+    .group-items {
+      font-size: 36px;
+      margin-bottom: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 4px;
+    }
+    
+    .group-count {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--game-purple);
+    }
+    
+    .addition-sign {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--game-purple);
+      display: flex;
+      align-items: center;
+    }
+    
+    .answers-row {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 24px;
+    }
+    
+    .answer-btn {
+      width: 72px;
+      height: 72px;
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s;
+    }
+    
+    .answer-btn:active {
+      transform: scale(0.95);
+    }
+    
+    .answer-btn.correct {
+      background: var(--game-green);
+      color: white;
+      animation: pop 0.3s ease;
+    }
+    
+    .modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    
+    .modal-overlay.active {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: var(--surface);
+      border-radius: var(--radius-xl);
+      padding: 40px 32px;
+      text-align: center;
+      max-width: 300px;
+      animation: bounceIn 0.5s ease;
+    }
+    
+    @keyframes bounceIn {
+      0% { transform: scale(0.5); opacity: 0; }
+      70% { transform: scale(1.05); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    
+    .modal-emoji {
+      font-size: 80px;
+      margin-bottom: 16px;
+      animation: bounce 1s ease infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .modal-title {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+    
+    .modal-desc {
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+    }
+    
+    .modal-stars {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    
+    .modal-stars .star {
+      font-size: 40px;
+      animation: starPop 0.5s ease;
+    }
+    
+    .modal-stars .star:nth-child(2) { animation-delay: 0.1s; }
+    .modal-stars .star:nth-child(3) { animation-delay: 0.2s; }
+    
+    @keyframes starPop {
+      0% { transform: scale(0) rotate(0deg); }
+      100% { transform: scale(1) rotate(360deg); }
+    }
+    
+    .continue-btn {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white;
+      border: none;
+      border-radius: var(--radius-full);
+      padding: 16px 48px;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+      box-shadow: var(--shadow-glow);
+    }
+    
+    .continue-btn:active {
+      transform: scale(0.95);
+    }
+    
+    .achievement-header {
+      text-align: center;
+      padding: 24px 0;
+    }
+    
+    .achievement-title-main {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--game-purple);
+      margin-bottom: 8px;
+    }
+    
+    .achievement-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    
+    .badges-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .badge-item {
+      aspect-ratio: 1;
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .badge-item.locked {
+      opacity: 0.5;
+    }
+    
+    .badge-emoji {
+      font-size: 32px;
+    }
+    
+    .badge-name {
+      font-size: 10px;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+    
+    .ability-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .ability-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .ability-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+    
+    .ability-icon.count { background: linear-gradient(135deg, var(--game-blue), var(--game-blue-light)); }
+    .ability-icon.match { background: linear-gradient(135deg, var(--game-orange), var(--game-orange-light)); }
+    .ability-icon.sequence { background: linear-gradient(135deg, var(--game-green), var(--game-green-light)); }
+    .ability-icon.addition { background: linear-gradient(135deg, var(--game-purple), var(--game-purple-light)); }
+    
+    .ability-info {
+      flex: 1;
+    }
+    
+    .ability-name {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .ability-progress {
+      height: 8px;
+      background: var(--background);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    
+    .ability-progress-bar {
+      height: 100%;
+      border-radius: var(--radius-full);
+      transition: width 0.3s;
+    }
+    
+    .ability-progress-bar.count { background: var(--game-blue); }
+    .ability-progress-bar.match { background: var(--game-orange); }
+    .ability-progress-bar.sequence { background: var(--game-green); }
+    .ability-progress-bar.addition { background: var(--game-purple); }
+    
+    .ability-percent {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    
+    .profile-header {
+      text-align: center;
+      padding: 32px 0;
+    }
+    
+    .avatar-selector {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+    
+    .main-avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--primary-light));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 56px;
+      cursor: pointer;
+      box-shadow: var(--shadow-md);
+      transition: transform 0.2s;
+    }
+    
+    .main-avatar:active {
+      transform: scale(0.95);
+    }
+    
+    .avatar-options {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    
+    .avatar-option {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s;
+      border: 3px solid transparent;
+    }
+    
+    .avatar-option:active {
+      transform: scale(0.95);
+    }
+    
+    .avatar-option.selected {
+      border-color: var(--primary);
+      transform: scale(1.1);
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-label {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      display: block;
+    }
+    
+    .form-input {
+      width: 100%;
+      height: 56px;
+      background: var(--surface);
+      border: 2px solid var(--text-light);
+      border-radius: var(--radius-md);
+      padding: 0 16px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      transition: border-color 0.2s;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    
+    .age-selector {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .age-btn {
+      flex: 1;
+      height: 56px;
+      background: var(--surface);
+      border: 2px solid var(--text-light);
+      border-radius: var(--radius-md);
+      font-family: 'Fredoka', sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .age-btn:active {
+      transform: scale(0.98);
+    }
+    
+    .age-btn.selected {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+    
+    .save-btn {
+      width: 100%;
+      height: 56px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      border: none;
+      border-radius: var(--radius-full);
+      color: white;
+      font-family: 'Fredoka', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 24px;
+      transition: transform 0.2s;
+      box-shadow: var(--shadow-glow);
+    }
+    
+    .save-btn:active {
+      transform: scale(0.98);
+    }
+    
+    .design-nav {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      box-shadow: var(--shadow-lg);
+      z-index: 1000;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    
+    .design-nav-title {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--primary);
+    }
+    
+    .design-nav-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .design-nav-btn {
+      padding: 8px 16px;
+      background: var(--background);
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: 'Nunito', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+    }
+    
+    .design-nav-btn:hover {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .design-nav-btn.active {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .screens-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .screen-wrapper {
+      margin: 20px;
+    }
+    
+    .screen-label {
+      font-family: 'Fredoka', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-align: center;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+  <nav class="design-nav">
+    <div class="design-nav-title">📱 设计稿导航</div>
+    <div class="design-nav-list">
+      <button class="design-nav-btn active" onclick="showAll()">显示全部</button>
+      <button class="design-nav-btn" onclick="showScreen('home')">首页</button>
+      <button class="design-nav-btn" onclick="showScreen('count')">数数乐园</button>
+      <button class="design-nav-btn" onclick="showScreen('match')">数字配对</button>
+      <button class="design-nav-btn" onclick="showScreen('sequence')">数字接龙</button>
+      <button class="design-nav-btn" onclick="showScreen('addition')">趣味加法</button>
+      <button class="design-nav-btn" onclick="showScreen('modal')">完成弹窗</button>
+      <button class="design-nav-btn" onclick="showScreen('achievement')">成就页面</button>
+      <button class="design-nav-btn" onclick="showScreen('profile')">孩子档案</button>
+    </div>
+  </nav>
+
+  <div class="screens-container">
+    <!-- 首页 -->
+    <div class="screen-wrapper" data-screen="home">
+      <div class="screen-label">首页</div>
+      <div class="phone-frame">
+        <div class="screen active" id="home-screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="status-icons">
+              <span>📶</span>
+              <span>🔋</span>
+            </div>
+          </div>
+          <div class="content">
+            <div class="header">
+              <div class="logo">🔢 数字乐园</div>
+              <div class="avatar-btn">👶</div>
+            </div>
+            
+            <div class="welcome-card">
+              <div class="welcome-title">欢迎回来～</div>
+              <div class="welcome-name">小明</div>
+              <div class="stats-row">
+                <div class="stat-item">
+                  <div class="stat-value">32</div>
+                  <div class="stat-label">星星</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value">15</div>
+                  <div class="stat-label">通关</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value">8/10</div>
+                  <div class="stat-label">已学数字</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="section-title">选择游戏开始学习</div>
+            
+            <div class="games-grid">
+              <div class="game-card count">
+                <div class="game-icon">🔢</div>
+                <div class="game-name">数数乐园</div>
+                <div class="game-stars">
+                  <span class="star filled">⭐</span>
+                  <span class="star filled">⭐</span>
+                  <span class="star filled">⭐</span>
+                  <span class="star empty">☆</span>
+                  <span class="star empty">☆</span>
+                </div>
+              </div>
+              <div class="game-card match">
+                <div class="game-icon">🎯</div>
+                <div class="game-name">数字配对</div>
+                <div class="game-stars">
+                  <span class="star filled">⭐</span>
+                  <span class="star filled">⭐</span>
+                  <span class="star filled">⭐</span>
+                  <span class="star filled">⭐</span>
+                  <span class="star empty">☆</span>
+                </div>
+              </div>
+              <div class="game-card sequence">
+                <div class="game-icon">🔗</div>
+                <div class="game-name">数字接龙</div>
+                <div class="game-stars">
+                  <span class="star filled">⭐</span>
+                  <span class="star filled">⭐</span>
+                  <span class="star filled">⭐</span>
+                  <span class="star filled">⭐</span>
+                  <span class="star filled">⭐</span>
+                </div>
+              </div>
+              <div class="game-card addition">
+                <div class="game-icon">➕</div>
+                <div class="game-name">趣味加法</div>
+                <div class="game-stars">
+                  <span class="star filled">⭐</span>
+                  <span class="star filled">⭐</span>
+                  <span class="star empty">☆</span>
+                  <span class="star empty">☆</span>
+                  <span class="star empty">☆</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="achievement-card">
+              <div class="achievement-icon">🏆</div>
+              <div class="achievement-info">
+                <div class="achievement-title">成就墙</div>
+                <div class="achievement-desc">已获得 12 个成就徽章</div>
+              </div>
+              <div class="achievement-badges">
+                <span class="badge-icon">🌟</span>
+                <span class="badge-icon">🎯</span>
+                <span class="badge-icon">🏅</span>
+                <span class="badge-icon">🎖️</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="tab-bar">
+            <div class="tab-item active">
+              <div class="tab-icon">🏠</div>
+              <div class="tab-label">首页</div>
+            </div>
+            <div class="tab-item">
+              <div class="tab-icon">🎮</div>
+              <div class="tab-label">游戏</div>
+            </div>
+            <div class="tab-item">
+              <div class="tab-icon">🏆</div>
+              <div class="tab-label">成就</div>
+            </div>
+            <div class="tab-item">
+              <div class="tab-icon">👤</div>
+              <div class="tab-label">我的</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 数数乐园 -->
+    <div class="screen-wrapper" data-screen="count">
+      <div class="screen-label">数数乐园</div>
+      <div class="phone-frame">
+        <div class="screen active" id="count-screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="status-icons">
+              <span>📶</span>
+              <span>🔋</span>
+            </div>
+          </div>
+          <div class="content">
+            <div class="game-header">
+              <div class="back-btn">←</div>
+              <div class="game-title count">🔢 数数乐园</div>
+              <div class="stars-display">
+                <span class="star filled">⭐</span>
+                <span>5</span>
+              </div>
+            </div>
+            
+            <div class="target-card">
+              <div class="target-label">请 数 到</div>
+              <div class="target-number">5</div>
+              <div class="target-hint">👆 点击苹果数一数！</div>
+            </div>
+            
+            <div class="items-area">
+              <div class="count-item">🍎</div>
+              <div class="count-item clicked">🍎</div>
+              <div class="count-item clicked">🍎</div>
+              <div class="count-item">🍎</div>
+              <div class="count-item">🍎</div>
+              <div class="count-item">🍎</div>
+              <div class="count-item">🍎</div>
+              <div class="count-item">🍎</div>
+            </div>
+            
+            <div class="current-count">
+              当前计数: <span>3</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 数字配对 -->
+    <div class="screen-wrapper" data-screen="match">
+      <div class="screen-label">数字配对</div>
+      <div class="phone-frame">
+        <div class="screen active" id="match-screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="status-icons">
+              <span>📶</span>
+              <span>🔋</span>
+            </div>
+          </div>
+          <div class="content">
+            <div class="game-header">
+              <div class="back-btn">←</div>
+              <div class="game-title match">🎯 数字配对</div>
+              <div class="stars-display">
+                <span class="star filled">⭐</span>
+                <span>3</span>
+              </div>
+            </div>
+            
+            <div class="match-area">
+              <div class="section-title">拖动数字到对应数量</div>
+              <div class="numbers-row">
+                <div class="number-card">3</div>
+                <div class="number-card matched">5</div>
+                <div class="number-card">2</div>
+                <div class="number-card">4</div>
+                <div class="number-card">1</div>
+                <div class="number-card">6</div>
+              </div>
+              
+              <div class="items-row">
+                <div class="match-target matched">
+                  <div class="match-target-items">🍎🍎🍎🍎🍎</div>
+                  <div class="match-target-count">5个</div>
+                </div>
+                <div class="match-target">
+                  <div class="match-target-items">🍊🍊🍊</div>
+                  <div class="match-target-count">3个</div>
+                </div>
+                <div class="match-target">
+                  <div class="match-target-items">🐶🐶</div>
+                  <div class="match-target-count">2个</div>
+                </div>
+                <div class="match-target">
+                  <div class="match-target-items">🚗🚗🚗🚗</div>
+                  <div class="match-target-count">4个</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 数字接龙 -->
+    <div class="screen-wrapper" data-screen="sequence">
+      <div class="screen-label">数字接龙</div>
+      <div class="phone-frame">
+        <div class="screen active" id="sequence-screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="status-icons">
+              <span>📶</span>
+              <span>🔋</span>
+            </div>
+          </div>
+          <div class="content">
+            <div class="game-header">
+              <div class="back-btn">←</div>
+              <div class="game-title sequence">🔗 数字接龙</div>
+              <div class="stars-display">
+                <span class="star filled">⭐</span>
+                <span>8</span>
+              </div>
+            </div>
+            
+            <div class="progress-hint">
+              请按顺序点击: <span>1 → 10</span>
+            </div>
+            
+            <div class="sequence-grid">
+              <div class="sequence-btn correct">1</div>
+              <div class="sequence-btn correct">2</div>
+              <div class="sequence-btn correct">3</div>
+              <div class="sequence-btn next">4</div>
+              <div class="sequence-btn">7</div>
+              <div class="sequence-btn">9</div>
+              <div class="sequence-btn">5</div>
+              <div class="sequence-btn">10</div>
+              <div class="sequence-btn">6</div>
+              <div class="sequence-btn">8</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 趣味加法 -->
+    <div class="screen-wrapper" data-screen="addition">
+      <div class="screen-label">趣味加法</div>
+      <div class="phone-frame">
+        <div class="screen active" id="addition-screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="status-icons">
+              <span>📶</span>
+              <span>🔋</span>
+            </div>
+          </div>
+          <div class="content">
+            <div class="game-header">
+              <div class="back-btn">←</div>
+              <div class="game-title addition">➕ 趣味加法</div>
+              <div class="stars-display">
+                <span class="star filled">⭐</span>
+                <span>2</span>
+              </div>
+            </div>
+            
+            <div class="addition-story">
+              <div class="story-text">
+                小明有<span class="story-emoji">🍎🍎🍎</span>个苹果<br>
+                妈妈又给了<span class="story-emoji">🍎🍎</span>个苹果<br>
+                一共有多少个苹果？
+              </div>
+            </div>
+            
+            <div class="addition-groups">
+              <div class="addition-group">
+                <div class="group-label">第一组</div>
+                <div class="group-items">🍎🍎🍎</div>
+                <div class="group-count">3</div>
+              </div>
+              <div class="addition-sign">+</div>
+              <div class="addition-group">
+                <div class="group-label">第二组</div>
+                <div class="group-items">🍎🍎</div>
+                <div class="group-count">2</div>
+              </div>
+            </div>
+            
+            <div class="section-title">选择正确答案</div>
+            <div class="answers-row">
+              <div class="answer-btn">4</div>
+              <div class="answer-btn correct">5</div>
+              <div class="answer-btn">6</div>
+              <div class="answer-btn">7</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 完成弹窗 -->
+    <div class="screen-wrapper" data-screen="modal">
+      <div class="screen-label">完成弹窗</div>
+      <div class="phone-frame">
+        <div class="screen active" id="modal-screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="status-icons">
+              <span>📶</span>
+              <span>🔋</span>
+            </div>
+          </div>
+          <div class="content" style="filter: blur(4px);">
+            <div class="game-header">
+              <div class="back-btn">←</div>
+              <div class="game-title count">🔢 数数乐园</div>
+              <div class="stars-display">
+                <span class="star filled">⭐</span>
+                <span>5</span>
+              </div>
+            </div>
+            <div class="target-card" style="opacity: 0.5;">
+              <div class="target-label">请 数 到</div>
+              <div class="target-number">5</div>
+            </div>
+          </div>
+          
+          <div class="modal-overlay active">
+            <div class="modal-content">
+              <div class="modal-emoji">🎉</div>
+              <div class="modal-title">太棒了！</div>
+              <div class="modal-desc">你完成了这一轮数数！</div>
+              <div class="modal-stars">
+                <span class="star filled">⭐</span>
+                <span class="star filled">⭐</span>
+                <span class="star filled">⭐</span>
+              </div>
+              <button class="continue-btn">继续挑战</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 成就页面 -->
+    <div class="screen-wrapper" data-screen="achievement">
+      <div class="screen-label">成就页面</div>
+      <div class="phone-frame">
+        <div class="screen active" id="achievement-screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="status-icons">
+              <span>📶</span>
+              <span>🔋</span>
+            </div>
+          </div>
+          <div class="content">
+            <div class="achievement-header">
+              <div class="achievement-title-main">🏆 成就墙</div>
+              <div class="achievement-subtitle">已获得 12 个成就徽章</div>
+            </div>
+            
+            <div class="section-title">徽章收集</div>
+            <div class="badges-grid">
+              <div class="badge-item">
+                <div class="badge-emoji">🌟</div>
+                <div class="badge-name">初次尝试</div>
+              </div>
+              <div class="badge-item">
+                <div class="badge-emoji">🎯</div>
+                <div class="badge-name">精准配对</div>
+              </div>
+              <div class="badge-item">
+                <div class="badge-emoji">🏅</div>
+                <div class="badge-name">接龙高手</div>
+              </div>
+              <div class="badge-item">
+                <div class="badge-emoji">🎖️</div>
+                <div class="badge-name">加法达人</div>
+              </div>
+              <div class="badge-item">
+                <div class="badge-emoji">🔥</div>
+                <div class="badge-name">连续3天</div>
+              </div>
+              <div class="badge-item">
+                <div class="badge-emoji">💎</div>
+                <div class="badge-name">满分通关</div>
+              </div>
+              <div class="badge-item">
+                <div class="badge-emoji">🌈</div>
+                <div class="badge-name">彩虹收集</div>
+              </div>
+              <div class="badge-item locked">
+                <div class="badge-emoji">🔒</div>
+                <div class="badge-name">???</div>
+              </div>
+            </div>
+            
+            <div class="section-title">能力进度</div>
+            <div class="ability-cards">
+              <div class="ability-card">
+                <div class="ability-icon count">🔢</div>
+                <div class="ability-info">
+                  <div class="ability-name">数数乐园</div>
+                  <div class="ability-progress">
+                    <div class="ability-progress-bar count" style="width: 60%;"></div>
+                  </div>
+                </div>
+                <div class="ability-percent">60%</div>
+              </div>
+              <div class="ability-card">
+                <div class="ability-icon match">🎯</div>
+                <div class="ability-info">
+                  <div class="ability-name">数字配对</div>
+                  <div class="ability-progress">
+                    <div class="ability-progress-bar match" style="width: 80%;"></div>
+                  </div>
+                </div>
+                <div class="ability-percent">80%</div>
+              </div>
+              <div class="ability-card">
+                <div class="ability-icon sequence">🔗</div>
+                <div class="ability-info">
+                  <div class="ability-name">数字接龙</div>
+                  <div class="ability-progress">
+                    <div class="ability-progress-bar sequence" style="width: 100%;"></div>
+                  </div>
+                </div>
+                <div class="ability-percent">100%</div>
+              </div>
+              <div class="ability-card">
+                <div class="ability-icon addition">➕</div>
+                <div class="ability-info">
+                  <div class="ability-name">趣味加法</div>
+                  <div class="ability-progress">
+                    <div class="ability-progress-bar addition" style="width: 40%;"></div>
+                  </div>
+                </div>
+                <div class="ability-percent">40%</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="tab-bar">
+            <div class="tab-item">
+              <div class="tab-icon">🏠</div>
+              <div class="tab-label">首页</div>
+            </div>
+            <div class="tab-item">
+              <div class="tab-icon">🎮</div>
+              <div class="tab-label">游戏</div>
+            </div>
+            <div class="tab-item active">
+              <div class="tab-icon">🏆</div>
+              <div class="tab-label">成就</div>
+            </div>
+            <div class="tab-item">
+              <div class="tab-icon">👤</div>
+              <div class="tab-label">我的</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 孩子档案 -->
+    <div class="screen-wrapper" data-screen="profile">
+      <div class="screen-label">孩子档案</div>
+      <div class="phone-frame">
+        <div class="screen active" id="profile-screen">
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="status-icons">
+              <span>📶</span>
+              <span>🔋</span>
+            </div>
+          </div>
+          <div class="content">
+            <div class="game-header">
+              <div class="back-btn">←</div>
+              <div class="game-title">👶 创建档案</div>
+              <div style="width: 48px;"></div>
+            </div>
+            
+            <div class="profile-header">
+              <div class="avatar-selector">
+                <div class="main-avatar">👧</div>
+              </div>
+              <div class="avatar-options">
+                <div class="avatar-option">👶</div>
+                <div class="avatar-option selected">👧</div>
+                <div class="avatar-option">👦</div>
+                <div class="avatar-option">🧒</div>
+                <div class="avatar-option">🐰</div>
+                <div class="avatar-option">🐻</div>
+                <div class="avatar-option">🦊</div>
+                <div class="avatar-option">🐱</div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">孩子的名字</label>
+              <input type="text" class="form-input" placeholder="请输入名字" value="小红">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">孩子的年龄</label>
+              <div class="age-selector">
+                <button class="age-btn">3岁</button>
+                <button class="age-btn selected">4岁</button>
+                <button class="age-btn">5岁</button>
+                <button class="age-btn">6岁</button>
+              </div>
+            </div>
+            
+            <button class="save-btn">保存档案</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showScreen(screenName) {
+      const wrappers = document.querySelectorAll('.screen-wrapper');
+      wrappers.forEach(wrapper => {
+        if (wrapper.dataset.screen === screenName) {
+          wrapper.style.display = 'block';
+        } else {
+          wrapper.style.display = 'none';
+        }
+      });
+      
+      const btns = document.querySelectorAll('.design-nav-btn');
+      btns.forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.textContent.includes(getScreenLabel(screenName)) || btn.onclick.toString().includes(screenName)) {
+          btn.classList.add('active');
+        }
+      });
+    }
+    
+    function showAll() {
+      const wrappers = document.querySelectorAll('.screen-wrapper');
+      wrappers.forEach(wrapper => {
+        wrapper.style.display = 'block';
+      });
+      
+      const btns = document.querySelectorAll('.design-nav-btn');
+      btns.forEach(btn => btn.classList.remove('active'));
+      btns[0].classList.add('active');
+    }
+    
+    function getScreenLabel(screenName) {
+      const labels = {
+        'home': '首页',
+        'count': '数数乐园',
+        'match': '数字配对',
+        'sequence': '数字接龙',
+        'addition': '趣味加法',
+        'modal': '完成弹窗',
+        'achievement': '成就页面',
+        'profile': '孩子档案'
+      };
+      return labels[screenName] || screenName;
+    }
+    
+    document.querySelectorAll('.count-item').forEach(item => {
+      item.addEventListener('click', function() {
+        this.classList.toggle('clicked');
+      });
+    });
+    
+    document.querySelectorAll('.sequence-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        if (this.classList.contains('next')) {
+          this.classList.remove('next');
+          this.classList.add('correct');
+        } else if (!this.classList.contains('correct')) {
+          this.classList.add('wrong');
+          setTimeout(() => this.classList.remove('wrong'), 300);
+        }
+      });
+    });
+    
+    document.querySelectorAll('.answer-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.answer-btn').forEach(b => b.classList.remove('correct'));
+        this.classList.add('correct');
+      });
+    });
+    
+    document.querySelectorAll('.avatar-option').forEach(option => {
+      option.addEventListener('click', function() {
+        document.querySelectorAll('.avatar-option').forEach(o => o.classList.remove('selected'));
+        this.classList.add('selected');
+        document.querySelector('.main-avatar').textContent = this.textContent;
+      });
+    });
+    
+    document.querySelectorAll('.age-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.age-btn').forEach(b => b.classList.remove('selected'));
+        this.classList.add('selected');
+      });
+    });
+  </script>
+</body>
+</html>
