@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -20,10 +20,30 @@ import { useMatchingGameStore, useProgressStore, useUserStore } from '@/stores';
 import { useSound, useSpeech } from '@/hooks';
 import { colors, layout, spacing, borderRadius, fontSizes, fontWeights } from '@/theme';
 
-const { width } = Dimensions.get('window');
-const CARD_GAP = 16;
-const GRID_PADDING = 20;
-const CARD_WIDTH = (width - GRID_PADDING * 2 - CARD_GAP * 3) / 4;
+const { width, height } = Dimensions.get('window');
+const CARD_GAP = 12;
+const GRID_PADDING = 16;
+
+// 计算卡片尺寸，适配横屏和竖屏
+const calculateCardDimensions = () => {
+  const isLandscape = width > height;
+  const columns = isLandscape ? 8 : 4; // 横屏8列，竖屏4列
+  const rows = isLandscape ? 2 : 4;    // 横屏2行，竖屏4行
+
+  // 计算可用空间
+  const availableWidth = width - GRID_PADDING * 2 - CARD_GAP * (columns - 1);
+  const availableHeight = height - 200; // 减去header和hint区域的高度
+
+  const cardWidth = availableWidth / columns;
+  const cardHeight = (availableHeight - CARD_GAP * (rows - 1)) / rows;
+
+  // 取较小值确保卡片是正方形或接近正方形
+  const cardSize = Math.min(cardWidth, cardHeight * 0.8);
+
+  return { cardSize, columns };
+};
+
+const { cardSize: CARD_SIZE, columns: COLUMNS } = calculateCardDimensions();
 
 interface ShakingCardProps {
   children: React.ReactNode;
@@ -144,7 +164,7 @@ export default function MatchingGameScreen() {
               key={card.id}
               style={[
                 styles.cardWrapper,
-                { marginRight: (index + 1) % 4 === 0 ? 0 : CARD_GAP },
+                { marginRight: (index + 1) % COLUMNS === 0 ? 0 : CARD_GAP },
               ]}
             >
               <ShakingCard isShaking={card.isShaking}>
@@ -154,7 +174,7 @@ export default function MatchingGameScreen() {
                   isMatched={card.isMatched}
                   onPress={() => handleCardPress(card.id)}
                   disabled={card.isMatched}
-                  style={{ width: CARD_WIDTH, height: CARD_WIDTH * 1.25 }}
+                  style={{ width: CARD_SIZE, height: CARD_SIZE * 1.2 }}
                 />
               </ShakingCard>
             </View>
@@ -213,7 +233,8 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   cardWrapper: {
     marginBottom: CARD_GAP,
