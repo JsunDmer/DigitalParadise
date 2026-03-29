@@ -28,6 +28,7 @@ export const colors = {
   star: '#FFE66D',
   locked: '#B2BEC3',
   overlay: 'rgba(0, 0, 0, 0.7)',
+  border: '#E0E0E0',
 };
 
 export type ColorTheme = typeof colors;

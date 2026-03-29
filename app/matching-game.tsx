@@ -58,13 +58,14 @@ export default function MatchingGameScreen() {
   const [lastMatchedCount, setLastMatchedCount] = useState(0);
   const { playClick, playSuccess, playError } = useSound();
   const { speakNumber, speakText } = useSpeech();
-  
+
   const {
     cards,
     matchedPairs,
     totalPairs,
     moves,
     isCompleted,
+    lastMatchedNumber,
     initializeGame,
     flipCard,
     resetGame,
@@ -77,20 +78,18 @@ export default function MatchingGameScreen() {
   // 监听配对成功
   useEffect(() => {
     if (matchedPairs > lastMatchedCount) {
-      // 找到新配对
+      // 播放成功音效和语音播报
       playSuccess();
-      // 找到刚匹配的卡片数字
-      const matchedCard = cards.find(c => c.isMatched);
-      if (matchedCard) {
-        speakNumber(matchedCard.number);
+      if (lastMatchedNumber !== null) {
+        speakNumber(lastMatchedNumber);
       }
       setLastMatchedCount(matchedPairs);
     }
-    
+
     if (isCompleted) {
       speakText('太棒了！你完成了所有配对！');
     }
-  }, [matchedPairs, isCompleted, lastMatchedCount, playSuccess, speakNumber, speakText, cards]);
+  }, [matchedPairs, isCompleted, lastMatchedCount, playSuccess, speakNumber, speakText, lastMatchedNumber]);
 
   const handleBackPress = () => {
     router.back();

@@ -43,7 +43,8 @@ export default function ProfileScreen() {
     return `${mins}分钟`;
   };
 
-  const totalPlayTime = 750;
+  // 游戏时长：根据完成关卡数估算，每关约5分钟
+  const totalPlayTime = completedLevels * 5;
 
   const getAgeText = (age: number) => {
     if (age <= 3) return '小班';
@@ -118,7 +119,7 @@ export default function ProfileScreen() {
             <StatsCard
               icon="🔥"
               label="连续学习天数"
-              value={`${7}天`}
+              value={`${Math.min(completedLevels, 7)}天`}
               color={colors.game.sequence}
               style={styles.statsCard}
             />

@@ -16,6 +16,7 @@ interface MatchingGameState {
   moves: number;
   isLocked: boolean;
   isCompleted: boolean;
+  lastMatchedNumber: number | null;
 }
 
 interface MatchingGameActions {
@@ -53,6 +54,7 @@ const initialState: MatchingGameState = {
   moves: 0,
   isLocked: false,
   isCompleted: false,
+  lastMatchedNumber: null,
 };
 
 export const useMatchingGameStore = create<MatchingGameStore>((set, get) => ({
@@ -66,6 +68,7 @@ export const useMatchingGameStore = create<MatchingGameStore>((set, get) => ({
       moves: 0,
       isLocked: false,
       isCompleted: false,
+      lastMatchedNumber: null,
     });
   },
 
@@ -126,6 +129,7 @@ export const useMatchingGameStore = create<MatchingGameStore>((set, get) => ({
         moves: moves + 1,
         isLocked: false,
         isCompleted,
+        lastMatchedNumber: firstCard.number,
       });
     } else {
       const shakeCards = cards.map(c =>
@@ -157,6 +161,7 @@ export const useMatchingGameStore = create<MatchingGameStore>((set, get) => ({
     set({
       ...initialState,
       cards: generateCards(),
+      lastMatchedNumber: null,
     });
   },
 }));
