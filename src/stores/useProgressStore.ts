@@ -49,141 +49,141 @@ export const useProgressStore = create<ProgressState>()(
     (set, get) => ({
       ...initialProgressState,
 
-  addStars: (count) =>
-    set((state) => ({
-      totalStars: Math.max(0, state.totalStars + count),
-    })),
+      addStars: (count) =>
+        set((state) => ({
+          totalStars: Math.max(0, state.totalStars + count),
+        })),
 
-  completeLevel: (levelId, stars) =>
-    set((state) => {
-      const existingProgress = state.levelProgress.find(
-        (p) => p.levelId === levelId
-      );
-      const isNewCompletion = !existingProgress?.completed;
-      const now = new Date().toISOString();
+      completeLevel: (levelId, stars) =>
+        set((state) => {
+          const existingProgress = state.levelProgress.find(
+            (p) => p.levelId === levelId
+          );
+          const isNewCompletion = !existingProgress?.completed;
+          const now = new Date().toISOString();
 
-      return {
-        levelProgress: existingProgress
-          ? state.levelProgress.map((p) =>
-              p.levelId === levelId
-                ? {
-                    ...p,
+          return {
+            levelProgress: existingProgress
+              ? state.levelProgress.map((p) =>
+                  p.levelId === levelId
+                    ? {
+                        ...p,
+                        completed: true,
+                        stars: p.stars + stars,
+                        completedAt: now,
+                      }
+                    : p
+                )
+              : [
+                  ...state.levelProgress,
+                  {
+                    levelId,
                     completed: true,
-                    stars: p.stars + stars, // 累加星星
+                    stars,
                     completedAt: now,
-                  }
-                : p
-            )
-          : [
-              ...state.levelProgress,
+                  },
+                ],
+            completedLevels: isNewCompletion
+              ? state.completedLevels + 1
+              : state.completedLevels,
+            totalStars: state.totalStars + stars,
+          };
+        }),
+
+      updateNumberProgress: (number, mastered, stars) =>
+        set((state) => {
+          const existingProgress = state.learnedNumbers.find(
+            (p) => p.number === number
+          );
+          const now = new Date().toISOString();
+
+          if (existingProgress) {
+            return {
+              learnedNumbers: state.learnedNumbers.map((p) =>
+                p.number === number
+                  ? {
+                      ...p,
+                      mastered: mastered || p.mastered,
+                      stars: Math.max(p.stars, stars),
+                      attempts: p.attempts + 1,
+                      lastAttemptAt: now,
+                    }
+                  : p
+              ),
+            };
+          }
+
+          return {
+            learnedNumbers: [
+              ...state.learnedNumbers,
               {
-                levelId,
-                completed: true,
+                number,
+                mastered,
                 stars,
-                completedAt: now,
+                attempts: 1,
+                lastAttemptAt: now,
               },
             ],
-        completedLevels: isNewCompletion
-          ? state.completedLevels + 1
-          : state.completedLevels,
-        totalStars: state.totalStars + stars, // 每次完成都加星星
-      };
-    }),
+          };
+        }),
 
-  updateNumberProgress: (number, mastered, stars) =>
-    set((state) => {
-      const existingProgress = state.learnedNumbers.find(
-        (p) => p.number === number
-      );
-      const now = new Date().toISOString();
+      getNumberProgress: (number) => {
+        return get().learnedNumbers.find((p) => p.number === number);
+      },
 
-      if (existingProgress) {
-        return {
-          learnedNumbers: state.learnedNumbers.map((p) =>
-            p.number === number
-              ? {
-                  ...p,
-                  mastered: mastered || p.mastered,
-                  stars: Math.max(p.stars, stars),
-                  attempts: p.attempts + 1,
-                  lastAttemptAt: now,
-                }
-              : p
-          ),
-        };
-      }
+      getLevelProgress: (levelId) => {
+        return get().levelProgress.find((p) => p.levelId === levelId);
+      },
 
-      return {
-        learnedNumbers: [
-          ...state.learnedNumbers,
-          {
-            number,
-            mastered,
+      resetProgress: () => set(initialProgressState),
+
+      loadProgress: async (childId: string) => {
+        try {
+          const progressList = await progressService.getByChildId(childId);
+          const completedProgress = progressList.filter(p => p.completed);
+          
+          const levelProgress = completedProgress.map(p => ({
+            levelId: p.gameId,
+            completed: p.completed,
+            stars: p.stars,
+            completedAt: p.updatedAt,
+          }));
+
+          const totalStars = await progressService.getTotalStarsByChildId(childId);
+          const completedLevels = completedProgress.length;
+
+          set({
+            totalStars,
+            completedLevels,
+            levelProgress,
+            learnedNumbers: [],
+            isLoaded: true,
+          });
+        } catch (error) {
+          console.error('Failed to load progress:', error);
+          set({ isLoaded: true });
+        }
+      },
+
+      saveProgress: async (childId: string, gameId: string, level: number, score: number, stars: number, completed: boolean) => {
+        try {
+          await progressService.upsert({
+            childId,
+            gameId,
+            level,
+            score,
             stars,
-            attempts: 1,
-            lastAttemptAt: now,
-          },
-        ],
-      };
+            completed,
+          });
+        } catch (error) {
+          console.error('Failed to save progress:', error);
+        }
+      },
+
+      hydrateFromDatabase: async (childId: string) => {
+        await get().loadProgress(childId);
+      },
     }),
-
-  getNumberProgress: (number) => {
-    return get().learnedNumbers.find((p) => p.number === number);
-  },
-
-  getLevelProgress: (levelId) => {
-    return get().levelProgress.find((p) => p.levelId === levelId);
-  },
-
-  resetProgress: () => set(initialProgressState),
-
-  loadProgress: async (childId: string) => {
-    try {
-      const progressList = await progressService.getByChildId(childId);
-      const completedProgress = progressList.filter(p => p.completed);
-      
-      const levelProgress = completedProgress.map(p => ({
-        levelId: p.gameId,
-        completed: p.completed,
-        stars: p.stars,
-        completedAt: p.updatedAt,
-      }));
-
-      const totalStars = await progressService.getTotalStarsByChildId(childId);
-      const completedLevels = completedProgress.length;
-
-      set({
-        totalStars,
-        completedLevels,
-        levelProgress,
-        learnedNumbers: [],
-        isLoaded: true,
-      });
-    } catch (error) {
-      console.error('Failed to load progress:', error);
-      set({ isLoaded: true });
-    }
-  },
-
-  saveProgress: async (childId: string, gameId: string, level: number, score: number, stars: number, completed: boolean) => {
-    try {
-      await progressService.upsert({
-        childId,
-        gameId,
-        level,
-        score,
-        stars,
-        completed,
-      });
-    } catch (error) {
-      console.error('Failed to save progress:', error);
-    }
-  },
-
-  hydrateFromDatabase: async (childId: string) => {
-    await get().loadProgress(childId);
-  },
-}),
     {
       name: 'digital-paradise-progress',
       storage: createJSONStorage(() => AsyncStorage),
