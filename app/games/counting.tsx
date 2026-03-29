@@ -15,6 +15,7 @@ import Header from '@/components/layout/Header';
 import GameItem from '@/components/game/GameItem';
 import CompletionModal from '@/components/game/CompletionModal';
 import { useCountingGameStore, CountingItem } from '@/stores';
+import { useSound, useSpeech } from '@/hooks';
 
 const GAME_ITEMS = ['🍎', '🍊', '🍋', '🍇', '🍓', '🌟', '🎈', '🎁', '🧸'];
 
@@ -22,6 +23,8 @@ export default function CountingGame() {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [itemIcon, setItemIcon] = useState('🍎');
+  const { playClick, playSuccess, playCelebration } = useSound();
+  const { speakNumber, speakText } = useSpeech();
 
   const {
     targetNumber,
@@ -44,12 +47,18 @@ export default function CountingGame() {
 
   useEffect(() => {
     if (isCompleted) {
+      // 判断是否通关所有关卡（假设10关为通关）
+      if (level >= 10) {
+        speakText('恭喜你！你已完成数数乐园的所有关卡！真棒！');
+      } else {
+        speakText(`太棒了！你数到了${targetNumber}！`);
+      }
       const timer = setTimeout(() => {
         setShowModal(true);
-      }, 500);
+      }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [isCompleted]);
+  }, [isCompleted, speakText, targetNumber, level]);
 
   const handleBack = () => {
     router.back();
@@ -85,12 +94,20 @@ export default function CountingGame() {
 
     return rows.map((row, rowIndex) => (
       <View key={rowIndex} style={styles.itemRow}>
-        {row.map((item) => (
+        {row.map((item, index) => (
           <GameItem
             key={item.id}
             icon={itemIcon}
             isClicked={item.isClicked}
-            onPress={() => clickItem(item.id)}
+            onPress={() => {
+              playClick();
+              clickItem(item.id);
+              // 播报当前数字
+              const currentNumber = items.filter(i => i.isClicked || i.id === item.id).length;
+              speakNumber(currentNumber);
+              // 播放成功音效
+              playSuccess();
+            }}
             testID={`game-item-${item.id}`}
           />
         ))}
@@ -172,11 +189,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   targetCard: {
-    height: layout.targetCard,
+    height: 140,
     backgroundColor: colors.surface,
     marginHorizontal: elementSpacing.normal,
     marginVertical: elementSpacing.normal,
-    borderRadius: borderRadius.xxl,
+    borderRadius: borderRadius.xl,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -186,20 +203,20 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   targetLabel: {
-    fontSize: fontSizes.body.large,
+    fontSize: 18,
     color: colors.text.secondary,
-    marginBottom: 8,
+    marginBottom: 4,
   },
   targetNumber: {
-    fontSize: fontSizes.number.huge,
+    fontSize: 72,
     fontWeight: fontWeights.bold,
     color: colors.game.count,
-    lineHeight: fontSizes.number.huge * 1.1,
+    lineHeight: 80,
   },
   targetHint: {
-    fontSize: fontSizes.body.medium,
+    fontSize: 14,
     color: colors.text.secondary,
-    marginTop: 8,
+    marginTop: 4,
   },
   gameArea: {
     flex: 1,
@@ -219,12 +236,12 @@ const styles = StyleSheet.create({
     gap: elementSpacing.normal,
   },
   counterArea: {
-    height: layout.counterArea,
+    height: 100,
     backgroundColor: colors.surface,
-    borderTopLeftRadius: borderRadius.xxl,
-    borderTopRightRadius: borderRadius.xxl,
+    borderTopLeftRadius: borderRadius.xl,
+    borderTopRightRadius: borderRadius.xl,
     paddingHorizontal: elementSpacing.normal,
-    paddingVertical: elementSpacing.tight,
+    paddingVertical: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.1,
@@ -232,21 +249,21 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   counterLabel: {
-    fontSize: fontSizes.number.counter,
+    fontSize: 20,
     fontWeight: fontWeights.bold,
     color: colors.text.primary,
-    marginBottom: 8,
+    marginBottom: 6,
     textAlign: 'center',
   },
   counterBlocksContainer: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 6,
     paddingHorizontal: 8,
   },
   counterBlock: {
-    width: 80,
-    height: 80,
-    borderRadius: borderRadius.lg,
+    width: 48,
+    height: 48,
+    borderRadius: borderRadius.md,
     backgroundColor: colors.background,
     alignItems: 'center',
     justifyContent: 'center',
@@ -255,15 +272,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.success,
   },
   counterNumber: {
-    fontSize: fontSizes.number.small,
+    fontSize: 20,
     fontWeight: fontWeights.bold,
     color: colors.text.primary,
   },
   counterCheck: {
     position: 'absolute',
-    bottom: 4,
-    right: 4,
-    fontSize: 16,
+    bottom: 2,
+    right: 2,
+    fontSize: 12,
     color: colors.surface,
     fontWeight: fontWeights.bold,
   },

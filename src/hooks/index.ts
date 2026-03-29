@@ -4,3 +4,4 @@ export { useDeviceType, useTabletAdaptation, getDeviceType, isTabletDevice } fro
 export type { DeviceInfo, TabletAdaptation } from './useDeviceType';
 export { useSound } from './useSound';
 export type { SoundType } from './useSound';
+export { useSpeech } from './useSpeech';

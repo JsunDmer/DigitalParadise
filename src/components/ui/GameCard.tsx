@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { colors, borderRadius, fontSizes, fontWeights, iconSizes } from '../../theme';
+import { useSound } from '../../hooks';
 
 interface GameCardProps {
   icon: string;
@@ -29,6 +30,7 @@ export default function GameCard({
   disabled = false,
 }: GameCardProps) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const { playClick } = useSound();
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
@@ -60,19 +62,23 @@ export default function GameCard({
     return starElements;
   };
 
+  const handlePress = () => {
+    playClick();
+    onPress();
+  };
+
   return (
     <Animated.View style={[{ transform: [{ scale: scaleAnim }] }, style]}>
       <TouchableOpacity
-        onPress={onPress}
+        onPress={handlePress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         disabled={disabled}
         activeOpacity={0.9}
         style={[styles.card, disabled && styles.disabled]}
       >
-        <View style={[styles.iconContainer, { backgroundColor: color + '20' }]}>
-          <Text style={styles.icon}>{icon}</Text>
-        </View>
+        <View style={[styles.colorBar, { backgroundColor: color }]} />
+        <Text style={styles.icon}>{icon}</Text>
         <Text style={styles.title}>{title}</Text>
         <View style={styles.starsContainer}>{renderStars()}</View>
       </TouchableOpacity>
@@ -82,44 +88,46 @@ export default function GameCard({
 
 const styles = StyleSheet.create({
   card: {
-    width: '48%',
-    minHeight: 200,
+    flex: 1,
     backgroundColor: colors.surface,
-    borderRadius: borderRadius.xxl,
+    borderRadius: borderRadius.xl,
     padding: 20,
+    paddingTop: 24,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 12,
-    elevation: 5,
+    elevation: 4,
+    overflow: 'hidden',
   },
-  iconContainer: {
-    width: iconSizes.large + 20,
-    height: iconSizes.large + 20,
-    borderRadius: borderRadius.xl,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
+  colorBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 4,
   },
   icon: {
-    fontSize: iconSizes.large,
+    fontSize: 48,
+    marginBottom: 8,
   },
   title: {
-    fontSize: fontSizes.button.large,
+    fontSize: 16,
     fontWeight: fontWeights.bold,
     color: colors.text.primary,
-    marginBottom: 12,
+    marginBottom: 8,
     textAlign: 'center',
   },
   starsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
   },
   star: {
-    fontSize: 24,
-    marginHorizontal: 2,
+    fontSize: 16,
   },
   disabled: {
     opacity: 0.5,

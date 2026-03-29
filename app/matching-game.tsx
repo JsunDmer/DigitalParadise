@@ -17,6 +17,7 @@ import Header from '@/components/layout/Header';
 import NumberCard from '@/components/game/NumberCard';
 import CompletionModal from '@/components/game/CompletionModal';
 import { useMatchingGameStore } from '@/stores';
+import { useSound, useSpeech } from '@/hooks';
 import { colors, layout, spacing, borderRadius, fontSizes, fontWeights } from '@/theme';
 
 const { width } = Dimensions.get('window');
@@ -54,6 +55,10 @@ function ShakingCard({ children, isShaking }: ShakingCardProps) {
 export default function MatchingGameScreen() {
   const router = useRouter();
   const [starsCount, setStarsCount] = useState(0);
+  const [lastMatchedCount, setLastMatchedCount] = useState(0);
+  const { playClick, playSuccess, playError, playCelebration } = useSound();
+  const { speakNumber, speakText } = useSpeech();
+  
   const {
     cards,
     matchedPairs,
@@ -69,11 +74,30 @@ export default function MatchingGameScreen() {
     initializeGame();
   }, [initializeGame]);
 
+  // 监听配对成功
+  useEffect(() => {
+    if (matchedPairs > lastMatchedCount) {
+      // 找到新配对
+      playSuccess();
+      // 找到刚匹配的卡片数字
+      const matchedCard = cards.find(c => c.isMatched);
+      if (matchedCard) {
+        speakNumber(matchedCard.number);
+      }
+      setLastMatchedCount(matchedPairs);
+    }
+    
+    if (isCompleted) {
+      speakText('太棒了！你完成了所有配对！');
+    }
+  }, [matchedPairs, isCompleted, lastMatchedCount, playSuccess, speakNumber, speakText, cards]);
+
   const handleBackPress = () => {
     router.back();
   };
 
   const handleCardPress = (cardId: number) => {
+    playClick();
     flipCard(cardId);
   };
 

@@ -121,9 +121,9 @@ export default function GameItem({
 
 const styles = StyleSheet.create({
   container: {
-    width: gameItem.apple,
-    height: gameItem.apple,
-    borderRadius: borderRadius.xl,
+    width: 72,
+    height: 72,
+    borderRadius: borderRadius.lg,
     backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
@@ -137,22 +137,22 @@ const styles = StyleSheet.create({
     backgroundColor: colors.success,
   },
   icon: {
-    fontSize: iconSizes.xlarge,
+    fontSize: 48,
   },
   checkmarkContainer: {
     position: 'absolute',
-    bottom: 8,
-    right: 8,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    bottom: 4,
+    right: 4,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkmark: {
     color: colors.success,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
 });

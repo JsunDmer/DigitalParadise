@@ -32,11 +32,11 @@ export default function StatsCard({
 
 const styles = StyleSheet.create({
   card: {
-    height: layout.statsCard,
+    height: 64,
     backgroundColor: colors.surface,
-    borderRadius: borderRadius.xl,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    borderRadius: borderRadius.lg,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     flexDirection: 'row',
     alignItems: 'center',
     shadowColor: '#000',
@@ -46,26 +46,26 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   iconContainer: {
-    width: iconSizes.medium,
-    height: iconSizes.medium,
+    width: 40,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 16,
+    marginRight: 12,
   },
   icon: {
-    fontSize: iconSizes.medium,
+    fontSize: 32,
   },
   contentContainer: {
     flex: 1,
     justifyContent: 'center',
   },
   label: {
-    fontSize: fontSizes.body.large,
+    fontSize: 14,
     color: colors.text.secondary,
-    marginBottom: 4,
+    marginBottom: 2,
   },
   value: {
-    fontSize: fontSizes.number.small,
+    fontSize: 20,
     fontWeight: fontWeights.bold,
   },
 });

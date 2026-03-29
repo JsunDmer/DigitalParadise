@@ -14,10 +14,13 @@ import Header from '@/components/layout/Header';
 import OptionCard from '@/components/game/OptionCard';
 import CompletionModal from '@/components/game/CompletionModal';
 import { useAdditionGameStore } from '@/stores';
+import { useSound, useSpeech } from '@/hooks';
 
 export default function AdditionGame() {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
+  const { playClick, playSuccess, playError, playCelebration } = useSound();
+  const { speakNumber, speakText } = useSpeech();
 
   const {
     num1,
@@ -42,12 +45,20 @@ export default function AdditionGame() {
 
   useEffect(() => {
     if (isCompleted && isCorrect) {
+      // 判断是否通关所有关卡（假设10关为通关）
+      if (level >= 10) {
+        speakText('恭喜你！你已完成趣味加法的所有关卡！真棒！');
+      } else {
+        speakText(`太棒了！${num1}加${num2}等于${num1 + num2}！`);
+      }
       const timer = setTimeout(() => {
         setShowModal(true);
-      }, 800);
+      }, 2000);
       return () => clearTimeout(timer);
+    } else if (isCompleted && !isCorrect) {
+      playError();
     }
-  }, [isCompleted, isCorrect]);
+  }, [isCompleted, isCorrect, playError, speakText, num1, num2, level]);
 
   const handleBack = () => {
     router.back();
@@ -89,7 +100,16 @@ export default function AdditionGame() {
             number={number}
             isSelected={selectedAnswer === number}
             isCorrect={selectedAnswer === number && isCorrect === true}
-            onPress={() => selectAnswer(number)}
+            onPress={() => {
+              playClick();
+              selectAnswer(number);
+              if (number === num1 + num2) {
+                playSuccess();
+                speakNumber(number);
+              } else {
+                playError();
+              }
+            }}
             disabled={isCompleted}
             testID={`option-card-${number}`}
           />
@@ -108,35 +128,38 @@ export default function AdditionGame() {
         onBackPress={handleBack}
       />
 
-      <View style={styles.questionCard}>
-        <View style={styles.equationContainer}>
-          <Text style={styles.equation}>{num1} + {num2} = ?</Text>
-        </View>
-        
-        <View style={styles.itemsContainer}>
-          <View style={styles.itemsGroup}>
+      {/* 故事场景卡片 */}
+      <View style={styles.storyCard}>
+        <Text style={styles.storyText}>
+          小明有 {num1} 个{itemIcon1}，又得到了 {num2} 个{itemIcon1}
+        </Text>
+        <Text style={styles.storyQuestion}>一共有多少个呢？</Text>
+      </View>
+
+      {/* 物品分组展示 */}
+      <View style={styles.groupsContainer}>
+        <View style={styles.groupBox}>
+          <Text style={styles.groupLabel}>第一组</Text>
+          <View style={styles.groupItems}>
             {renderItems(num1, itemIcon1)}
           </View>
-          <Text style={styles.plusSign}>+</Text>
-          <View style={styles.itemsGroup}>
-            {renderItems(num2, itemIcon2)}
+          <Text style={styles.groupCount}>{num1}</Text>
+        </View>
+
+        <Text style={styles.plusSign}>+</Text>
+
+        <View style={styles.groupBox}>
+          <Text style={styles.groupLabel}>第二组</Text>
+          <View style={styles.groupItems}>
+            {renderItems(num2, itemIcon1)}
           </View>
+          <Text style={styles.groupCount}>{num2}</Text>
         </View>
       </View>
 
-      <View style={styles.optionsArea}>
-        <View style={styles.optionsGrid}>
-          {renderOptions()}
-        </View>
-      </View>
-
-      <View style={styles.hintArea}>
-        <Text style={styles.hintText}>
-          {isCompleted 
-            ? (isCorrect ? '🎉 太棒了！回答正确！' : '😅 再试一次吧！')
-            : '👆 点击正确的答案！'
-          }
-        </Text>
+      {/* 答案选项 */}
+      <View style={styles.answersContainer}>
+        {renderOptions()}
       </View>
 
       <CompletionModal
@@ -157,82 +180,84 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  questionCard: {
-    height: layout.targetCard,
-    backgroundColor: colors.surface,
+  storyCard: {
+    backgroundColor: colors.game.addition,
     marginHorizontal: elementSpacing.normal,
-    marginVertical: elementSpacing.normal,
-    borderRadius: borderRadius.xxl,
+    marginTop: elementSpacing.normal,
+    borderRadius: borderRadius.xl,
+    padding: 20,
     alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowColor: colors.game.addition,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 8,
   },
-  equationContainer: {
-    marginBottom: 16,
+  storyText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 8,
   },
-  equation: {
-    fontSize: fontSizes.number.counter,
+  storyQuestion: {
+    fontSize: 18,
     fontWeight: fontWeights.bold,
-    color: colors.game.addition,
+    color: '#FFFFFF',
   },
-  itemsContainer: {
+  groupsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-around',
+    marginHorizontal: elementSpacing.normal,
+    marginTop: elementSpacing.normal,
   },
-  itemsGroup: {
+  groupBox: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    padding: 16,
+    alignItems: 'center',
+    minWidth: 120,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  groupLabel: {
+    fontSize: 12,
+    color: colors.text.secondary,
+    marginBottom: 8,
+  },
+  groupItems: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    maxWidth: 200,
+    gap: 4,
+    marginBottom: 8,
   },
   itemIcon: {
-    fontSize: 48,
-    marginHorizontal: 2,
-    marginVertical: 2,
+    fontSize: 28,
   },
-  plusSign: {
-    fontSize: 48,
+  groupCount: {
+    fontSize: 24,
     fontWeight: fontWeights.bold,
     color: colors.game.addition,
-    marginHorizontal: 16,
   },
-  optionsArea: {
+  plusSign: {
+    fontSize: 36,
+    fontWeight: fontWeights.bold,
+    color: colors.game.addition,
+  },
+  answersContainer: {
     flex: 1,
-    paddingHorizontal: elementSpacing.normal,
     justifyContent: 'center',
-  },
-  optionsGrid: {
-    alignItems: 'center',
+    paddingHorizontal: elementSpacing.normal,
   },
   optionRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     marginBottom: elementSpacing.normal,
     gap: elementSpacing.normal,
-  },
-  hintArea: {
-    height: layout.hintArea,
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: borderRadius.xxl,
-    borderTopRightRadius: borderRadius.xxl,
-    paddingHorizontal: elementSpacing.normal,
-    paddingVertical: elementSpacing.tight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  hintText: {
-    fontSize: fontSizes.body.large,
-    fontWeight: fontWeights.bold,
-    color: colors.text.primary,
   },
 });

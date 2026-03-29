@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ViewStyle, Animated } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors, layout, borderRadius, fontSizes, fontWeights, iconSizes } from '../../theme';
 
 interface AchievementEntryProps {
@@ -36,25 +37,32 @@ export default function AchievementEntry({
   return (
     <Animated.View style={[{ transform: [{ scale: scaleAnim }] }, style]}>
       <TouchableOpacity
-        style={styles.container}
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         activeOpacity={0.9}
       >
-        <View style={styles.leftSection}>
-          <Text style={styles.trophyIcon}>🏆</Text>
-          <View style={styles.textContainer}>
-            <Text style={styles.title}>成就墙</Text>
-            <Text style={styles.subtitle}>已获得 {achievementCount} 个成就徽章</Text>
+        <LinearGradient
+          colors={['#9013FE', '#A842FE']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.container}
+        >
+          <View style={styles.leftSection}>
+            <Text style={styles.trophyIcon}>🏆</Text>
+            <View style={styles.textContainer}>
+              <Text style={styles.title}>成就墙</Text>
+              <Text style={styles.subtitle}>已获得 {achievementCount} 个成就徽章</Text>
+            </View>
           </View>
-        </View>
 
-        <View style={styles.rightSection}>
-          <Text style={styles.badgeIcon}>🌟</Text>
-          <Text style={styles.badgeIcon}>🎯</Text>
-          <Text style={styles.badgeIcon}>🏅</Text>
-        </View>
+          <View style={styles.rightSection}>
+            <Text style={styles.badgeIcon}>🌟</Text>
+            <Text style={styles.badgeIcon}>🎯</Text>
+            <Text style={styles.badgeIcon}>🏅</Text>
+            <Text style={styles.badgeIcon}>🎖️</Text>
+          </View>
+        </LinearGradient>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -63,18 +71,17 @@ export default function AchievementEntry({
 const styles = StyleSheet.create({
   container: {
     height: layout.achievementEntry,
-    backgroundColor: colors.surface,
     borderRadius: borderRadius.xl,
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingVertical: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 5,
+    shadowColor: '#9013FE',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 8,
   },
   leftSection: {
     flexDirection: 'row',
@@ -82,28 +89,29 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   trophyIcon: {
-    fontSize: iconSizes.large,
+    fontSize: 32,
     marginRight: 16,
   },
   textContainer: {
     flex: 1,
   },
   title: {
-    fontSize: fontSizes.button.medium,
+    fontSize: 18,
     fontWeight: fontWeights.bold,
-    color: colors.text.primary,
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   subtitle: {
-    fontSize: fontSizes.body.small,
-    color: colors.text.secondary,
+    fontSize: 13,
+    color: '#FFFFFF',
+    opacity: 0.9,
   },
   rightSection: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
   },
   badgeIcon: {
-    fontSize: iconSizes.medium,
-    marginLeft: 4,
+    fontSize: 24,
   },
 });

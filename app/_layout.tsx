@@ -1,3 +1,8 @@
+// WeakRef polyfill for HarmonyOS compatibility
+if (typeof WeakRef === 'undefined') {
+  require('@ungap/weakrefs');
+}
+
 import { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';

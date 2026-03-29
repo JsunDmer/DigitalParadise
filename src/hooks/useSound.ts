@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect } from 'react';
+import { useRef, useCallback, useEffect, useState } from 'react';
 import { Audio } from 'expo-av';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import type { Asset } from 'expo-asset';
@@ -29,10 +29,17 @@ const SOUND_CONFIGS: Record<SoundType, SoundConfig> = {
   },
 };
 
+// 背景音乐配置
+const BACKGROUND_MUSIC_SOURCE = require('../../assets/sounds/background-music.mp3') as number;
+const BACKGROUND_MUSIC_VOLUME = 0.3; // 背景音乐音量较低
+
 export function useSound() {
   const soundEnabled = useSettingsStore((state) => state.soundEnabled);
+  const musicEnabled = useSettingsStore((state) => state.musicEnabled);
   const soundsRef = useRef<Map<SoundType, Audio.Sound>>(new Map());
+  const bgMusicRef = useRef<Audio.Sound | null>(null);
   const isInitializedRef = useRef(false);
+  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
 
   useEffect(() => {
     const initializeSounds = async () => {
@@ -44,6 +51,16 @@ export function useSound() {
           staysActiveInBackground: false,
           shouldDuckAndroid: true,
         });
+
+        // 加载背景音乐
+        const { sound } = await Audio.Sound.createAsync(
+          BACKGROUND_MUSIC_SOURCE,
+          {
+            volume: BACKGROUND_MUSIC_VOLUME,
+            isLooping: true,
+          }
+        );
+        bgMusicRef.current = sound;
 
         isInitializedRef.current = true;
       } catch (error) {
@@ -58,6 +75,10 @@ export function useSound() {
         sound.unloadAsync();
       });
       soundsRef.current.clear();
+      
+      if (bgMusicRef.current) {
+        bgMusicRef.current.unloadAsync();
+      }
     };
   }, []);
 
@@ -154,6 +175,52 @@ export function useSound() {
     []
   );
 
+  // 背景音乐控制
+  const playBackgroundMusic = useCallback(async (): Promise<void> => {
+    if (!musicEnabled || !bgMusicRef.current) return;
+
+    try {
+      const status = await bgMusicRef.current.getStatusAsync();
+      if (status.isLoaded && !status.isPlaying) {
+        await bgMusicRef.current.playAsync();
+        setIsMusicPlaying(true);
+      }
+    } catch (error) {
+      console.error('Failed to play background music:', error);
+    }
+  }, [musicEnabled]);
+
+  const pauseBackgroundMusic = useCallback(async (): Promise<void> => {
+    if (!bgMusicRef.current) return;
+
+    try {
+      await bgMusicRef.current.pauseAsync();
+      setIsMusicPlaying(false);
+    } catch (error) {
+      console.error('Failed to pause background music:', error);
+    }
+  }, []);
+
+  const stopBackgroundMusic = useCallback(async (): Promise<void> => {
+    if (!bgMusicRef.current) return;
+
+    try {
+      await bgMusicRef.current.stopAsync();
+      setIsMusicPlaying(false);
+    } catch (error) {
+      console.error('Failed to stop background music:', error);
+    }
+  }, []);
+
+  // 监听音乐开关变化
+  useEffect(() => {
+    if (musicEnabled) {
+      playBackgroundMusic();
+    } else {
+      pauseBackgroundMusic();
+    }
+  }, [musicEnabled, playBackgroundMusic, pauseBackgroundMusic]);
+
   return {
     playSound,
     playClick,
@@ -164,5 +231,9 @@ export function useSound() {
     stopAllSounds,
     setVolume,
     soundEnabled,
+    playBackgroundMusic,
+    pauseBackgroundMusic,
+    stopBackgroundMusic,
+    isMusicPlaying,
   };
 }

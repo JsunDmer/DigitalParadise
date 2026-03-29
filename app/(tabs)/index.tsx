@@ -12,7 +12,6 @@ import {
   pageMargin,
 } from '@/theme';
 import { GameCard, WelcomeCard, AchievementEntry } from '@/components/ui';
-import { TabBar } from '@/components/layout';
 import { useUserStore, useProgressStore } from '@/stores';
 import { achievementService } from '@/services';
 
@@ -138,7 +137,6 @@ export default function HomeScreen() {
         />
       </ScrollView>
 
-      <TabBar />
     </SafeAreaView>
   );
 }
@@ -208,13 +206,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    gap: elementSpacing.normal,
+    rowGap: elementSpacing.normal,
   },
   gameCard: {
     width: '48%',
   },
   achievementEntry: {
     marginTop: elementSpacing.relaxed,
-    marginBottom: layout.bottomNav + elementSpacing.normal,
+    marginBottom: elementSpacing.normal,
   },
 });

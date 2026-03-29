@@ -1,5 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet, ViewStyle } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, ViewStyle, Animated } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors, layout, borderRadius, fontSizes, fontWeights, iconSizes } from '../../theme';
 
 interface WelcomeCardProps {
@@ -17,68 +18,87 @@ export default function WelcomeCard({
   learnedNumbers,
   style,
 }: WelcomeCardProps) {
+  const floatAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatAnim, {
+          toValue: -6,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(floatAnim, {
+          toValue: 0,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
   return (
-    <View style={[styles.container, style]}>
-      <View style={styles.header}>
-        <Text style={styles.emoji}>🌟</Text>
-        <Text style={styles.welcomeText}>欢迎回来，{userName}！</Text>
-        <Text style={styles.emoji}>🌟</Text>
-      </View>
-
-      <View style={styles.statsContainer}>
-        <View style={styles.statItem}>
-          <Text style={styles.statIcon}>⭐</Text>
-          <Text style={styles.statValue}>{stars}</Text>
-          <Text style={styles.statLabel}>颗星星</Text>
+    <Animated.View style={{ transform: [{ translateY: floatAnim }] }}>
+      <LinearGradient
+        colors={[colors.primary, '#FF8A8A']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.container, style]}
+      >
+        <View style={styles.header}>
+          <Text style={styles.welcomeTitle}>欢迎回来～</Text>
         </View>
+        <Text style={styles.userName}>{userName}</Text>
 
-        <View style={styles.divider} />
+        <View style={styles.statsContainer}>
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{stars}</Text>
+            <Text style={styles.statLabel}>星星</Text>
+          </View>
 
-        <View style={styles.statItem}>
-          <Text style={styles.statIcon}>🎯</Text>
-          <Text style={styles.statValue}>{completedLevels}</Text>
-          <Text style={styles.statLabel}>次通关</Text>
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{completedLevels}</Text>
+            <Text style={styles.statLabel}>通关</Text>
+          </View>
+
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{learnedNumbers}/10</Text>
+            <Text style={styles.statLabel}>已学数字</Text>
+          </View>
         </View>
-
-        <View style={styles.divider} />
-
-        <View style={styles.statItem}>
-          <Text style={styles.statIcon}>🔢</Text>
-          <Text style={styles.statValue}>{learnedNumbers}</Text>
-          <Text style={styles.statLabel}>已学数字</Text>
-        </View>
-      </View>
-    </View>
+      </LinearGradient>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     height: layout.welcomeCard,
-    backgroundColor: colors.surface,
     borderRadius: borderRadius.xxl,
     paddingHorizontal: 24,
     paddingVertical: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 5,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 8,
   },
   header: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
+    marginBottom: 4,
   },
-  emoji: {
-    fontSize: iconSizes.medium,
-    marginHorizontal: 8,
+  welcomeTitle: {
+    fontSize: 18,
+    fontWeight: fontWeights.medium,
+    color: '#FFFFFF',
+    opacity: 0.95,
   },
-  welcomeText: {
-    fontSize: fontSizes.button.large,
+  userName: {
+    fontSize: 28,
     fontWeight: fontWeights.bold,
-    color: colors.text.primary,
+    color: '#FFFFFF',
+    textAlign: 'center',
+    marginBottom: 16,
   },
   statsContainer: {
     flexDirection: 'row',
@@ -89,23 +109,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
-  statIcon: {
-    fontSize: iconSizes.medium,
+  statValue: {
+    fontSize: 28,
+    fontWeight: fontWeights.bold,
+    color: '#FFFFFF',
     marginBottom: 4,
   },
-  statValue: {
-    fontSize: fontSizes.number.small,
-    fontWeight: fontWeights.bold,
-    color: colors.primary,
-    marginBottom: 2,
-  },
   statLabel: {
-    fontSize: fontSizes.body.small,
-    color: colors.text.secondary,
-  },
-  divider: {
-    width: 1,
-    height: 40,
-    backgroundColor: colors.text.secondary + '30',
+    fontSize: 12,
+    color: '#FFFFFF',
+    opacity: 0.9,
   },
 });

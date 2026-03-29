@@ -130,17 +130,22 @@ const styles = StyleSheet.create({
     elevation: 10,
     paddingBottom: 8,
     paddingTop: 12,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   tabItem: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
+    flexDirection: 'column',
   },
   label: {
     fontSize: fontSizes.body.small,
     fontWeight: fontWeights.medium,
     color: colors.text.secondary,
+    marginTop: 4,
   },
   labelActive: {
     color: colors.primary,
