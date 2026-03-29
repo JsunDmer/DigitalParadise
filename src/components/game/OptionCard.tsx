@@ -142,8 +142,8 @@ export default function OptionCard({
 
 const styles = StyleSheet.create({
   card: {
-    width: 100,
-    height: 120,
+    width: 90,
+    height: 100,
     borderRadius: borderRadius.lg,
     backgroundColor: colors.surface,
     alignItems: 'center',
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.error,
   },
   number: {
-    fontSize: fontSizes.number.small,
+    fontSize: 36,
     fontWeight: fontWeights.bold,
     color: colors.text.primary,
   },
