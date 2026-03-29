@@ -89,6 +89,15 @@ export const useSequenceGameStore = create<SequenceGameStore>((set, get) => ({
 
     set((state) => {
       const newNumbers = [...state.numbers];
+      
+      // 清除之前错误的标记（除了已经正确点击的）
+      newNumbers.forEach((n, idx) => {
+        if (n.isClicked && !n.isCorrect) {
+          newNumbers[idx] = { ...n, isClicked: false, isCorrect: false };
+        }
+      });
+      
+      // 设置当前点击的数字
       newNumbers[numberIndex] = {
         ...newNumbers[numberIndex],
         isClicked: true,
