@@ -44,7 +44,7 @@ export default function CountingGame() {
   useEffect(() => {
     const randomIcon = GAME_ITEMS[Math.floor(Math.random() * GAME_ITEMS.length)];
     setItemIcon(randomIcon);
-    initGame(5, randomIcon);
+    initGame(getRandomTarget(), randomIcon);
   }, []);
 
   useEffect(() => {
@@ -84,7 +84,7 @@ export default function CountingGame() {
     const randomIcon = GAME_ITEMS[Math.floor(Math.random() * GAME_ITEMS.length)];
     setItemIcon(randomIcon);
     resetGame();
-    initGame(5, randomIcon);
+    initGame(getRandomTarget(), randomIcon);
   };
 
   const getRandomTarget = () => {
