@@ -32,7 +32,6 @@ export default function SequenceGameScreen() {
     initGame,
     clickNumber,
     resetGame,
-    getProgress,
   } = useSequenceGameStore();
 
   useEffect(() => {
@@ -80,9 +79,6 @@ export default function SequenceGameScreen() {
     setShowModal(false);
     router.back();
   };
-
-  const progress = getProgress();
-  const progressPercent = Math.round(progress * 100);
 
   const renderNumberBalls = () => {
     return numbers.map((ballState, index) => (
@@ -136,15 +132,6 @@ export default function SequenceGameScreen() {
 
       <View style={styles.gameArea}>
         <View style={styles.gridContainer}>{renderNumberBalls()}</View>
-      </View>
-
-      <View style={styles.progressArea}>
-        <Text style={styles.progressText}>
-          进度: {progressPercent}% ({currentNumber - 1}/{totalNumbers})
-        </Text>
-        <View style={styles.progressBarContainer}>
-          <View style={[styles.progressBar, { width: `${progressPercent}%` }]} />
-        </View>
       </View>
 
       <CompletionModal
@@ -261,36 +248,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: BALL_SPACING,
     maxWidth: COLUMNS * (BALL_SIZE + BALL_SPACING),
-  },
-  progressArea: {
-    height: layout.progressArea,
-    backgroundColor: colors.surface,
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.md,
-    borderRadius: borderRadius.xxl,
-    paddingHorizontal: spacing.xl,
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  progressText: {
-    fontSize: fontSizes.body.medium,
-    fontWeight: fontWeights.bold,
-    color: colors.text.primary,
-    marginBottom: spacing.sm,
-  },
-  progressBarContainer: {
-    height: 24,
-    backgroundColor: colors.background,
-    borderRadius: borderRadius.md,
-    overflow: 'hidden',
-  },
-  progressBar: {
-    height: '100%',
-    backgroundColor: colors.game.sequence,
-    borderRadius: borderRadius.md,
   },
 });
