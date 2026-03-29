@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, TextInput, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Header from '../../src/components/layout/Header';
@@ -19,7 +19,7 @@ import {
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { currentChild } = useUserStore();
+  const { currentChild, updateChild } = useUserStore();
   const {
     soundEnabled,
     musicEnabled,
@@ -29,6 +29,10 @@ export default function ProfileScreen() {
     toggleNotifications,
   } = useSettingsStore();
   const { totalStars, completedLevels } = useProgressStore();
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(currentChild?.name || '');
+  const [editAge, setEditAge] = useState(currentChild?.age?.toString() || '5');
 
   const formatPlayTime = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
@@ -47,6 +51,16 @@ export default function ProfileScreen() {
     return '大班';
   };
 
+  const handleSaveProfile = () => {
+    if (currentChild && editName.trim()) {
+      updateChild(currentChild.id, {
+        name: editName.trim(),
+        age: parseInt(editAge) || 5,
+      });
+      setIsEditing(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <Header
@@ -60,7 +74,7 @@ export default function ProfileScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.avatarSection}>
+        <TouchableOpacity style={styles.avatarSection} onPress={() => setIsEditing(true)}>
           <View style={styles.avatarContainer}>
             {currentChild?.avatar ? (
               <Image source={{ uri: currentChild.avatar }} style={styles.avatar} />
@@ -74,7 +88,8 @@ export default function ProfileScreen() {
           <Text style={styles.age}>
             {currentChild?.age || 5}岁 · {getAgeText(currentChild?.age || 5)}
           </Text>
-        </View>
+          <Text style={styles.editHint}>点击修改信息</Text>
+        </TouchableOpacity>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>📊 学习统计</Text>
@@ -137,6 +152,59 @@ export default function ProfileScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* 编辑信息弹窗 */}
+      <Modal
+        visible={isEditing}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setIsEditing(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>修改小朋友信息</Text>
+            
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>姓名</Text>
+              <TextInput
+                style={styles.input}
+                value={editName}
+                onChangeText={setEditName}
+                placeholder="请输入姓名"
+                placeholderTextColor={colors.text.secondary}
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>年龄</Text>
+              <TextInput
+                style={styles.input}
+                value={editAge}
+                onChangeText={setEditAge}
+                placeholder="请输入年龄"
+                placeholderTextColor={colors.text.secondary}
+                keyboardType="number-pad"
+                maxLength={2}
+              />
+            </View>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setIsEditing(false)}
+              >
+                <Text style={styles.cancelButtonText}>取消</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.saveButton]}
+                onPress={handleSaveProfile}
+              >
+                <Text style={styles.saveButtonText}>保存</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -219,5 +287,80 @@ const styles = StyleSheet.create({
   },
   settingItem: {
     marginBottom: spacing.sm,
+  },
+  editHint: {
+    fontSize: 12,
+    color: colors.primary,
+    marginTop: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.lg,
+  },
+  modalContent: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.xl,
+    padding: spacing.xl,
+    width: '100%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: fontSizes.title.small,
+    fontWeight: fontWeights.bold,
+    color: colors.text.primary,
+    marginBottom: spacing.lg,
+    textAlign: 'center',
+  },
+  inputContainer: {
+    marginBottom: spacing.md,
+  },
+  inputLabel: {
+    fontSize: fontSizes.body.medium,
+    color: colors.text.secondary,
+    marginBottom: spacing.xs,
+  },
+  input: {
+    height: 48,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.md,
+    fontSize: fontSizes.body.large,
+    color: colors.text.primary,
+    backgroundColor: colors.background,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: spacing.lg,
+    gap: spacing.md,
+  },
+  modalButton: {
+    flex: 1,
+    height: 48,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelButton: {
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  cancelButtonText: {
+    fontSize: fontSizes.body.large,
+    color: colors.text.secondary,
+    fontWeight: fontWeights.medium,
+  },
+  saveButton: {
+    backgroundColor: colors.primary,
+  },
+  saveButtonText: {
+    fontSize: fontSizes.body.large,
+    color: colors.surface,
+    fontWeight: fontWeights.bold,
   },
 });

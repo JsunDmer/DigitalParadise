@@ -19,7 +19,7 @@ import { useSound, useSpeech } from '@/hooks';
 export default function AdditionGame() {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
-  const { playClick, playSuccess, playError, playCelebration } = useSound();
+  const { playClick, playSuccess, playError } = useSound();
   const { speakNumber, speakText } = useSpeech();
 
   const {

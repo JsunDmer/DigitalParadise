@@ -16,7 +16,7 @@ const COLUMNS = 5;
 export default function SequenceGameScreen() {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
-  const { playClick, playSuccess, playError, playCelebration } = useSound();
+  const { playClick, playSuccess, playError } = useSound();
   const { speakNumber, speakText } = useSpeech();
 
   const {

@@ -6,6 +6,7 @@ if (typeof WeakRef === 'undefined') {
 import { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import { colors } from '@/theme';
 import { initService } from '@/services';
 import { useUserStore } from '@/stores';
@@ -17,6 +18,9 @@ export default function RootLayout() {
   const setCurrentChild = useUserStore((state) => state.setCurrentChild);
 
   useEffect(() => {
+    // 解锁屏幕方向，支持横竖屏
+    ScreenOrientation.unlockAsync();
+    
     async function prepare() {
       try {
         const result = await initService.initialize();
@@ -73,7 +77,6 @@ export default function RootLayout() {
   return (
     <Stack>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
       <Stack.Screen 
         name="matching-game" 
         options={{ 

@@ -56,7 +56,7 @@ export default function MatchingGameScreen() {
   const router = useRouter();
   const [starsCount, setStarsCount] = useState(0);
   const [lastMatchedCount, setLastMatchedCount] = useState(0);
-  const { playClick, playSuccess, playError, playCelebration } = useSound();
+  const { playClick, playSuccess, playError } = useSound();
   const { speakNumber, speakText } = useSpeech();
   
   const {

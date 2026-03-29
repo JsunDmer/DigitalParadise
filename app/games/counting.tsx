@@ -9,7 +9,6 @@ import {
   fontWeights,
   borderRadius,
   elementSpacing,
-  gameItem,
 } from '@/theme';
 import Header from '@/components/layout/Header';
 import GameItem from '@/components/game/GameItem';
@@ -23,7 +22,7 @@ export default function CountingGame() {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [itemIcon, setItemIcon] = useState('🍎');
-  const { playClick, playSuccess, playCelebration } = useSound();
+  const { playClick, playSuccess } = useSound();
   const { speakNumber, speakText } = useSpeech();
 
   const {

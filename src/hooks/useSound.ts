@@ -3,7 +3,7 @@ import { Audio } from 'expo-av';
 import { useSettingsStore } from '../stores/useSettingsStore';
 import type { Asset } from 'expo-asset';
 
-export type SoundType = 'click' | 'success' | 'error' | 'celebration';
+export type SoundType = 'click' | 'success' | 'error';
 
 interface SoundConfig {
   source: Asset | number;
@@ -22,10 +22,6 @@ const SOUND_CONFIGS: Record<SoundType, SoundConfig> = {
   error: {
     source: require('../../assets/sounds/error.mp3') as number,
     volume: 0.6,
-  },
-  celebration: {
-    source: require('../../assets/sounds/celebration.mp3') as number,
-    volume: 0.8,
   },
 };
 
@@ -133,11 +129,6 @@ export function useSound() {
     [playSound]
   );
 
-  const playCelebration = useCallback(
-    (volume?: number) => playSound('celebration', volume),
-    [playSound]
-  );
-
   const stopSound = useCallback(async (type: SoundType): Promise<void> => {
     const sound = soundsRef.current.get(type);
     if (sound) {
@@ -226,7 +217,6 @@ export function useSound() {
     playClick,
     playSuccess,
     playError,
-    playCelebration,
     stopSound,
     stopAllSounds,
     setVolume,
