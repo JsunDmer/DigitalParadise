@@ -46,9 +46,6 @@ export default function ProfileScreen() {
   // 游戏时长：根据完成关卡数估算，每关约5分钟
   const totalPlayTime = completedLevels * 5;
 
-  // 连续学习天数：完成至少一关后才开始计算，否则为0
-  const streakDays = completedLevels > 0 ? Math.min(completedLevels, 7) : 0;
-
   const getAgeText = (age: number) => {
     if (age <= 3) return '小班';
     if (age <= 4) return '中班';
@@ -117,13 +114,6 @@ export default function ProfileScreen() {
               label="获得星星数"
               value={`${totalStars}颗`}
               color={colors.star}
-              style={styles.statsCard}
-            />
-            <StatsCard
-              icon="🔥"
-              label="连续学习天数"
-              value={`${streakDays}天`}
-              color={colors.game.sequence}
               style={styles.statsCard}
             />
           </View>
