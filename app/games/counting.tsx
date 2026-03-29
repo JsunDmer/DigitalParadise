@@ -34,6 +34,7 @@ export default function CountingGame() {
     isCompleted,
     level,
     stars,
+    completedCount,
     initGame,
     clickItem,
     nextLevel,
@@ -48,8 +49,8 @@ export default function CountingGame() {
 
   useEffect(() => {
     if (isCompleted) {
-      // 保存进度：完成一关加1颗星
-      if (currentChild) {
+      // 每完成5次算一关，达到5次倍数时保存进度
+      if (currentChild && (completedCount + 1) % 5 === 0) {
         completeLevel(`counting-${level}`, 1);
       }
 
@@ -64,7 +65,7 @@ export default function CountingGame() {
       }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [isCompleted, speakText, targetNumber, level, currentChild, completeLevel]);
+  }, [isCompleted, speakText, targetNumber, level, currentChild, completeLevel, completedCount]);
 
   const handleBack = () => {
     router.back();

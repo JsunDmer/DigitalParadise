@@ -12,6 +12,7 @@ export interface AdditionGameState {
   stars: number;
   itemIcon1: string;
   itemIcon2: string;
+  completedCount: number; // 完成次数，每5次算一关
 }
 
 interface AdditionGameActions {
@@ -65,6 +66,7 @@ const initialState: AdditionGameState = {
   stars: 0,
   itemIcon1: '🍎',
   itemIcon2: '🍊',
+  completedCount: 0,
 };
 
 export const useAdditionGameStore = create<AdditionGameStore>((set, get) => ({
@@ -109,7 +111,7 @@ export const useAdditionGameStore = create<AdditionGameStore>((set, get) => ({
     const { num1, num2 } = generateProblem(1);
     const correctAnswer = num1 + num2;
     const options = generateOptions(correctAnswer);
-    
+
     set({
       num1,
       num2,
@@ -122,15 +124,17 @@ export const useAdditionGameStore = create<AdditionGameStore>((set, get) => ({
       stars: 0,
       itemIcon1: getRandomIcon(),
       itemIcon2: getRandomIcon(),
+      completedCount: 0,
     });
   },
 
   nextLevel: () => {
     const state = get();
-    const { num1, num2 } = generateProblem(state.level + 1);
+    const newCompletedCount = state.completedCount + 1;
+    const { num1, num2 } = generateProblem(Math.floor(newCompletedCount / 5) + 1);
     const correctAnswer = num1 + num2;
     const options = generateOptions(correctAnswer);
-    
+
     set({
       num1,
       num2,
@@ -139,10 +143,11 @@ export const useAdditionGameStore = create<AdditionGameStore>((set, get) => ({
       selectedAnswer: null,
       isCorrect: null,
       isCompleted: false,
-      level: state.level + 1,
+      level: Math.floor(newCompletedCount / 5) + 1, // 每5次算一关
       stars: 0,
       itemIcon1: getRandomIcon(),
       itemIcon2: getRandomIcon(),
+      completedCount: newCompletedCount,
     });
   },
 

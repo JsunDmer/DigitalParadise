@@ -35,6 +35,7 @@ export default function AdditionGame() {
     stars,
     itemIcon1,
     itemIcon2,
+    completedCount,
     initGame,
     selectAnswer,
     nextLevel,
@@ -47,8 +48,8 @@ export default function AdditionGame() {
 
   useEffect(() => {
     if (isCompleted && isCorrect) {
-      // 保存进度：完成一关加1颗星
-      if (currentChild) {
+      // 每完成5次算一关，达到5次倍数时保存进度
+      if (currentChild && (completedCount + 1) % 5 === 0) {
         completeLevel(`addition-${level}`, 1);
       }
 
@@ -65,7 +66,7 @@ export default function AdditionGame() {
     } else if (isCompleted && !isCorrect) {
       playError();
     }
-  }, [isCompleted, isCorrect, playError, speakText, num1, num2, level, currentChild, completeLevel]);
+  }, [isCompleted, isCorrect, playError, speakText, num1, num2, level, currentChild, completeLevel, completedCount]);
 
   const handleBack = () => {
     router.back();

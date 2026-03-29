@@ -14,6 +14,7 @@ export interface CountingGameState {
   isCompleted: boolean;
   level: number;
   stars: number;
+  completedCount: number; // 完成次数，每5次算一关
 }
 
 interface CountingGameActions {
@@ -46,6 +47,7 @@ const initialState: CountingGameState = {
   isCompleted: false,
   level: 1,
   stars: 0,
+  completedCount: 0,
 };
 
 export const useCountingGameStore = create<CountingGameStore>((set, get) => ({
@@ -58,6 +60,7 @@ export const useCountingGameStore = create<CountingGameStore>((set, get) => ({
       currentCount: 0,
       isCompleted: false,
       stars: 0,
+      completedCount: 0,
     });
   },
 
@@ -87,7 +90,6 @@ export const useCountingGameStore = create<CountingGameStore>((set, get) => ({
   },
 
   resetGame: () => {
-    const state = get();
     const newTarget = getRandomTarget(3, 10);
     set({
       targetNumber: newTarget,
@@ -96,19 +98,22 @@ export const useCountingGameStore = create<CountingGameStore>((set, get) => ({
       isCompleted: false,
       level: 1,
       stars: 0,
+      completedCount: 0,
     });
   },
 
   nextLevel: () => {
     const state = get();
+    const newCompletedCount = state.completedCount + 1;
     const newTarget = getRandomTarget(3, 10);
     set({
       targetNumber: newTarget,
       items: generateItems(newTarget),
       currentCount: 0,
       isCompleted: false,
-      level: state.level + 1,
+      level: Math.floor(newCompletedCount / 5) + 1, // 每5次算一关
       stars: 0,
+      completedCount: newCompletedCount,
     });
   },
 
