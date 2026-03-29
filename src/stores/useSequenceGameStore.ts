@@ -13,6 +13,8 @@ interface SequenceGameState {
   clickedCount: number;
   isCompleted: boolean;
   isPlaying: boolean;
+  completedCount: number; // 完成次数，每5次算一关
+  level: number;
 }
 
 interface SequenceGameActions {
@@ -51,6 +53,8 @@ export const useSequenceGameStore = create<SequenceGameStore>((set, get) => ({
   clickedCount: 0,
   isCompleted: false,
   isPlaying: false,
+  completedCount: 0,
+  level: 1,
 
   initGame: (totalNumbers = DEFAULT_TOTAL_NUMBERS) => {
     set({
@@ -60,6 +64,8 @@ export const useSequenceGameStore = create<SequenceGameStore>((set, get) => ({
       clickedCount: 0,
       isCompleted: false,
       isPlaying: true,
+      completedCount: 0,
+      level: 1,
     });
   },
 
@@ -70,7 +76,12 @@ export const useSequenceGameStore = create<SequenceGameStore>((set, get) => ({
     }
 
     const numberIndex = state.numbers.findIndex((n) => n.number === number);
-    if (numberIndex === -1 || state.numbers[numberIndex].isClicked) {
+    if (numberIndex === -1) {
+      return false;
+    }
+
+    // 如果已经点击过且是正确的，不允许重复点击
+    if (state.numbers[numberIndex].isClicked && state.numbers[numberIndex].isCorrect) {
       return false;
     }
 
@@ -102,12 +113,15 @@ export const useSequenceGameStore = create<SequenceGameStore>((set, get) => ({
 
   resetGame: () => {
     const state = get();
+    const newCompletedCount = state.completedCount + 1;
     set({
       numbers: generateNumbers(state.totalNumbers),
       currentNumber: 1,
       clickedCount: 0,
       isCompleted: false,
       isPlaying: true,
+      completedCount: newCompletedCount,
+      level: Math.floor(newCompletedCount / 5) + 1,
     });
   },
 

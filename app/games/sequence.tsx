@@ -7,7 +7,7 @@ import NumberBall from '@/components/game/NumberBall';
 import CompletionModal from '@/components/game/CompletionModal';
 import { useSequenceGameStore } from '@/stores/useSequenceGameStore';
 import { useProgressStore, useUserStore } from '@/stores';
-import { colors, layout, spacing, borderRadius, fontSizes, fontWeights } from '@/theme';
+import { colors, layout, spacing, borderRadius, fontSizes, fontWeights, elementSpacing } from '@/theme';
 import { useSound, useSpeech } from '@/hooks';
 
 const BALL_SIZE = 72;
@@ -27,6 +27,8 @@ export default function SequenceGameScreen() {
     currentNumber,
     totalNumbers,
     isCompleted,
+    completedCount,
+    level,
     initGame,
     clickNumber,
     resetGame,
@@ -39,9 +41,9 @@ export default function SequenceGameScreen() {
 
   useEffect(() => {
     if (isCompleted) {
-      // 保存进度：完成一关加1颗星
-      if (currentChild) {
-        completeLevel('sequence-1', 1);
+      // 每完成5次算一关，达到5次倍数时保存进度
+      if (currentChild && (completedCount + 1) % 5 === 0) {
+        completeLevel(`sequence-${level}`, 1);
       }
 
       speakText('太棒了！你完成了数字接龙！');
@@ -50,7 +52,7 @@ export default function SequenceGameScreen() {
       }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [isCompleted, speakText, currentChild, completeLevel]);
+  }, [isCompleted, speakText, currentChild, completeLevel, completedCount, level]);
 
   const handleNumberPress = (number: number) => {
     playClick();
@@ -101,9 +103,28 @@ export default function SequenceGameScreen() {
         title="🔗 数字接龙"
         showBack
         showStars
-        starsCount={5}
+        starsCount={completedCount}
         onBackPress={handleBackPress}
       />
+
+      {/* 关卡进度条 */}
+      <View style={styles.progressContainer}>
+        <View style={styles.levelRow}>
+          <Text style={styles.levelText}>第 {level} 关</Text>
+          <Text style={styles.countText}>{completedCount % 5}/5</Text>
+        </View>
+        <View style={styles.progressBarBackground}>
+          <View
+            style={[
+              styles.progressBarFill,
+              { width: `${((completedCount % 5) / 5) * 100}%` },
+            ]}
+          />
+        </View>
+        <Text style={styles.progressHintText}>
+          已完成 {completedCount} 次，再完成 {5 - (completedCount % 5)} 次升级！
+        </Text>
+      </View>
 
       <View style={styles.hintArea}>
         <Text style={styles.hintTitle}>按顺序点击数字！</Text>
@@ -143,6 +164,55 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  progressContainer: {
+    backgroundColor: colors.surface,
+    marginHorizontal: elementSpacing.normal,
+    marginBottom: elementSpacing.normal,
+    padding: 16,
+    borderRadius: borderRadius.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  levelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  levelText: {
+    fontSize: 18,
+    fontWeight: fontWeights.bold,
+    color: colors.text.primary,
+  },
+  countText: {
+    fontSize: 14,
+    fontWeight: fontWeights.bold,
+    color: colors.primary,
+    backgroundColor: colors.background,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: borderRadius.md,
+  },
+  progressBarBackground: {
+    height: 8,
+    backgroundColor: colors.background,
+    borderRadius: 4,
+    marginBottom: 8,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: 8,
+    backgroundColor: colors.game.sequence,
+    borderRadius: 4,
+  },
+  progressHintText: {
+    fontSize: 13,
+    color: colors.text.secondary,
+    textAlign: 'center',
   },
   hintArea: {
     height: layout.hintArea,
