@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { progressService } from '../services/progressService';
 import { useUserStore } from './useUserStore';
 
@@ -42,8 +44,10 @@ const initialProgressState = {
   isLoaded: false,
 };
 
-export const useProgressStore = create<ProgressState>((set, get) => ({
-  ...initialProgressState,
+export const useProgressStore = create<ProgressState>()(
+  persist(
+    (set, get) => ({
+      ...initialProgressState,
 
   addStars: (count) =>
     set((state) => ({
@@ -179,4 +183,10 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
   hydrateFromDatabase: async (childId: string) => {
     await get().loadProgress(childId);
   },
-}));
+}),
+    {
+      name: 'digital-paradise-progress',
+      storage: createJSONStorage(() => AsyncStorage),
+    }
+  )
+);

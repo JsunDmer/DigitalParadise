@@ -54,14 +54,16 @@ export const useCountingGameStore = create<CountingGameStore>((set, get) => ({
   ...initialState,
 
   initGame: (targetNumber, itemIcon = '🍎') => {
-    set({
+    set((state) => ({
       targetNumber,
       items: generateItems(targetNumber, itemIcon),
       currentCount: 0,
       isCompleted: false,
       stars: 0,
-      completedCount: 0,
-    });
+      // 保留 completedCount 和 level，不要重置
+      completedCount: state.completedCount,
+      level: state.level,
+    }));
   },
 
   clickItem: (itemId) => {

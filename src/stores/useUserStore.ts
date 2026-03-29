@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface ChildProfile {
   id: string;
@@ -18,40 +20,48 @@ interface UserState {
   switchChild: (childId: string) => void;
 }
 
-export const useUserStore = create<UserState>((set, get) => ({
-  currentChild: null,
-  children: [],
-  setCurrentChild: (child) => set({ currentChild: child }),
-  addChild: (child) =>
-    set((state) => ({
-      children: [...state.children, child],
-      currentChild: state.children.length === 0 ? child : state.currentChild,
-    })),
-  removeChild: (childId) =>
-    set((state) => {
-      const newChildren = state.children.filter((c) => c.id !== childId);
-      const newCurrentChild =
-        state.currentChild?.id === childId
-          ? newChildren.length > 0
-            ? newChildren[0]
-            : null
-          : state.currentChild;
-      return { children: newChildren, currentChild: newCurrentChild };
+export const useUserStore = create<UserState>()(
+  persist(
+    (set, get) => ({
+      currentChild: null,
+      children: [],
+      setCurrentChild: (child) => set({ currentChild: child }),
+      addChild: (child) =>
+        set((state) => ({
+          children: [...state.children, child],
+          currentChild: state.children.length === 0 ? child : state.currentChild,
+        })),
+      removeChild: (childId) =>
+        set((state) => {
+          const newChildren = state.children.filter((c) => c.id !== childId);
+          const newCurrentChild =
+            state.currentChild?.id === childId
+              ? newChildren.length > 0
+                ? newChildren[0]
+                : null
+              : state.currentChild;
+          return { children: newChildren, currentChild: newCurrentChild };
+        }),
+      updateChild: (childId, updates) =>
+        set((state) => ({
+          children: state.children.map((c) =>
+            c.id === childId ? { ...c, ...updates } : c
+          ),
+          currentChild:
+            state.currentChild?.id === childId
+              ? { ...state.currentChild, ...updates }
+              : state.currentChild,
+        })),
+      switchChild: (childId) => {
+        const child = get().children.find((c) => c.id === childId);
+        if (child) {
+          set({ currentChild: child });
+        }
+      },
     }),
-  updateChild: (childId, updates) =>
-    set((state) => ({
-      children: state.children.map((c) =>
-        c.id === childId ? { ...c, ...updates } : c
-      ),
-      currentChild:
-        state.currentChild?.id === childId
-          ? { ...state.currentChild, ...updates }
-          : state.currentChild,
-    })),
-  switchChild: (childId) => {
-    const child = get().children.find((c) => c.id === childId);
-    if (child) {
-      set({ currentChild: child });
+    {
+      name: 'digital-paradise-user',
+      storage: createJSONStorage(() => AsyncStorage),
     }
-  },
-}));
+  )
+);
