@@ -136,6 +136,25 @@ export default function AdditionGame() {
         onBackPress={handleBack}
       />
 
+      {/* 关卡进度条 */}
+      <View style={styles.progressContainer}>
+        <View style={styles.levelRow}>
+          <Text style={styles.levelText}>第 {level} 关</Text>
+          <Text style={styles.countText}>{completedCount % 5}/5</Text>
+        </View>
+        <View style={styles.progressBarBackground}>
+          <View
+            style={[
+              styles.progressBarFill,
+              { width: `${((completedCount % 5) / 5) * 100}%` },
+            ]}
+          />
+        </View>
+        <Text style={styles.progressText}>
+          已完成 {completedCount} 次，再完成 {5 - (completedCount % 5)} 次升级！
+        </Text>
+      </View>
+
       {/* 故事场景卡片 */}
       <View style={styles.storyCard}>
         <Text style={styles.storyText}>
@@ -267,5 +286,54 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: elementSpacing.normal,
     gap: elementSpacing.normal,
+  },
+  progressContainer: {
+    backgroundColor: colors.surface,
+    marginHorizontal: elementSpacing.normal,
+    marginBottom: elementSpacing.normal,
+    padding: 16,
+    borderRadius: borderRadius.lg,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  levelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  levelText: {
+    fontSize: 18,
+    fontWeight: fontWeights.bold,
+    color: colors.text.primary,
+  },
+  countText: {
+    fontSize: 14,
+    fontWeight: fontWeights.bold,
+    color: colors.primary,
+    backgroundColor: colors.background,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: borderRadius.md,
+  },
+  progressBarBackground: {
+    height: 8,
+    backgroundColor: colors.background,
+    borderRadius: 4,
+    marginBottom: 8,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: 8,
+    backgroundColor: colors.game.addition,
+    borderRadius: 4,
+  },
+  progressText: {
+    fontSize: 13,
+    color: colors.text.secondary,
+    textAlign: 'center',
   },
 });
