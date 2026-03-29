@@ -65,7 +65,7 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
                 ? {
                     ...p,
                     completed: true,
-                    stars: Math.max(p.stars, stars),
+                    stars: p.stars + stars, // 累加星星
                     completedAt: now,
                   }
                 : p
@@ -82,9 +82,7 @@ export const useProgressStore = create<ProgressState>((set, get) => ({
         completedLevels: isNewCompletion
           ? state.completedLevels + 1
           : state.completedLevels,
-        totalStars: existingProgress
-          ? state.totalStars + Math.max(0, stars - existingProgress.stars)
-          : state.totalStars + stars,
+        totalStars: state.totalStars + stars, // 每次完成都加星星
       };
     }),
 

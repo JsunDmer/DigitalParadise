@@ -16,7 +16,7 @@ import Animated, {
 import Header from '@/components/layout/Header';
 import NumberCard from '@/components/game/NumberCard';
 import CompletionModal from '@/components/game/CompletionModal';
-import { useMatchingGameStore } from '@/stores';
+import { useMatchingGameStore, useProgressStore, useUserStore } from '@/stores';
 import { useSound, useSpeech } from '@/hooks';
 import { colors, layout, spacing, borderRadius, fontSizes, fontWeights } from '@/theme';
 
@@ -58,6 +58,8 @@ export default function MatchingGameScreen() {
   const [lastMatchedCount, setLastMatchedCount] = useState(0);
   const { playClick, playSuccess, playError } = useSound();
   const { speakNumber, speakText } = useSpeech();
+  const completeLevel = useProgressStore((state) => state.completeLevel);
+  const currentChild = useUserStore((state) => state.currentChild);
 
   const {
     cards,
@@ -87,9 +89,14 @@ export default function MatchingGameScreen() {
     }
 
     if (isCompleted) {
+      // 保存进度：完成一关加1颗星
+      if (currentChild) {
+        completeLevel('matching-1', 1);
+      }
+
       speakText('太棒了！你完成了所有配对！');
     }
-  }, [matchedPairs, isCompleted, lastMatchedCount, playSuccess, speakNumber, speakText, lastMatchedNumber]);
+  }, [matchedPairs, isCompleted, lastMatchedCount, playSuccess, speakNumber, speakText, lastMatchedNumber, currentChild, completeLevel]);
 
   const handleBackPress = () => {
     router.back();

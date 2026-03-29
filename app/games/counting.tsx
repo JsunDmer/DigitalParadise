@@ -13,7 +13,7 @@ import {
 import Header from '@/components/layout/Header';
 import GameItem from '@/components/game/GameItem';
 import CompletionModal from '@/components/game/CompletionModal';
-import { useCountingGameStore, CountingItem } from '@/stores';
+import { useCountingGameStore, CountingItem, useProgressStore, useUserStore } from '@/stores';
 import { useSound, useSpeech } from '@/hooks';
 
 const GAME_ITEMS = ['🍎', '🍊', '🍋', '🍇', '🍓', '🌟', '🎈', '🎁', '🧸'];
@@ -24,6 +24,8 @@ export default function CountingGame() {
   const [itemIcon, setItemIcon] = useState('🍎');
   const { playClick, playSuccess } = useSound();
   const { speakNumber, speakText } = useSpeech();
+  const completeLevel = useProgressStore((state) => state.completeLevel);
+  const currentChild = useUserStore((state) => state.currentChild);
 
   const {
     targetNumber,
@@ -46,6 +48,11 @@ export default function CountingGame() {
 
   useEffect(() => {
     if (isCompleted) {
+      // 保存进度：完成一关加1颗星
+      if (currentChild) {
+        completeLevel(`counting-${level}`, 1);
+      }
+
       // 判断是否通关所有关卡（假设10关为通关）
       if (level >= 10) {
         speakText('恭喜你！你已完成数数乐园的所有关卡！真棒！');
@@ -57,7 +64,7 @@ export default function CountingGame() {
       }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [isCompleted, speakText, targetNumber, level]);
+  }, [isCompleted, speakText, targetNumber, level, currentChild, completeLevel]);
 
   const handleBack = () => {
     router.back();

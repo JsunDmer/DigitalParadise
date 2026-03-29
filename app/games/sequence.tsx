@@ -6,6 +6,7 @@ import Header from '@/components/layout/Header';
 import NumberBall from '@/components/game/NumberBall';
 import CompletionModal from '@/components/game/CompletionModal';
 import { useSequenceGameStore } from '@/stores/useSequenceGameStore';
+import { useProgressStore, useUserStore } from '@/stores';
 import { colors, layout, spacing, borderRadius, fontSizes, fontWeights } from '@/theme';
 import { useSound, useSpeech } from '@/hooks';
 
@@ -18,6 +19,8 @@ export default function SequenceGameScreen() {
   const [showModal, setShowModal] = useState(false);
   const { playClick, playSuccess, playError } = useSound();
   const { speakNumber, speakText } = useSpeech();
+  const completeLevel = useProgressStore((state) => state.completeLevel);
+  const currentChild = useUserStore((state) => state.currentChild);
 
   const {
     numbers,
@@ -36,13 +39,18 @@ export default function SequenceGameScreen() {
 
   useEffect(() => {
     if (isCompleted) {
+      // 保存进度：完成一关加1颗星
+      if (currentChild) {
+        completeLevel('sequence-1', 1);
+      }
+
       speakText('太棒了！你完成了数字接龙！');
       const timer = setTimeout(() => {
         setShowModal(true);
       }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [isCompleted, speakText]);
+  }, [isCompleted, speakText, currentChild, completeLevel]);
 
   const handleNumberPress = (number: number) => {
     playClick();

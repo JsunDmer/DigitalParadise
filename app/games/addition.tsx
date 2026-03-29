@@ -13,7 +13,7 @@ import {
 import Header from '@/components/layout/Header';
 import OptionCard from '@/components/game/OptionCard';
 import CompletionModal from '@/components/game/CompletionModal';
-import { useAdditionGameStore } from '@/stores';
+import { useAdditionGameStore, useProgressStore, useUserStore } from '@/stores';
 import { useSound, useSpeech } from '@/hooks';
 
 export default function AdditionGame() {
@@ -21,6 +21,8 @@ export default function AdditionGame() {
   const [showModal, setShowModal] = useState(false);
   const { playClick, playSuccess, playError } = useSound();
   const { speakNumber, speakText } = useSpeech();
+  const completeLevel = useProgressStore((state) => state.completeLevel);
+  const currentChild = useUserStore((state) => state.currentChild);
 
   const {
     num1,
@@ -45,6 +47,11 @@ export default function AdditionGame() {
 
   useEffect(() => {
     if (isCompleted && isCorrect) {
+      // 保存进度：完成一关加1颗星
+      if (currentChild) {
+        completeLevel(`addition-${level}`, 1);
+      }
+
       // 判断是否通关所有关卡（假设10关为通关）
       if (level >= 10) {
         speakText('恭喜你！你已完成趣味加法的所有关卡！真棒！');
@@ -58,7 +65,7 @@ export default function AdditionGame() {
     } else if (isCompleted && !isCorrect) {
       playError();
     }
-  }, [isCompleted, isCorrect, playError, speakText, num1, num2, level]);
+  }, [isCompleted, isCorrect, playError, speakText, num1, num2, level, currentChild, completeLevel]);
 
   const handleBack = () => {
     router.back();
