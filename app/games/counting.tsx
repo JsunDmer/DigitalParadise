@@ -148,7 +148,7 @@ export default function CountingGame() {
         title="🔢 数数乐园"
         showBack
         showStars
-        starsCount={level * 5}
+        starsCount={completedCount}
         onBackPress={handleBack}
       />
 

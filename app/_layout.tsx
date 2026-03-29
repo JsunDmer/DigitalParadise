@@ -10,6 +10,7 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import { colors } from '@/theme';
 import { initService } from '@/services';
 import { useUserStore } from '@/stores';
+import { childService } from '@/services';
 
 export default function RootLayout() {
   const [isReady, setIsReady] = useState(false);
@@ -31,19 +32,21 @@ export default function RootLayout() {
         }
 
         if (!result.hasChildren) {
-          addChild({
-            id: '1',
+          const defaultChild = await childService.create({
             name: '小明',
-            age: 5,
-            createdAt: new Date().toISOString(),
+            birthDate: new Date(Date.now() - 5 * 365 * 24 * 60 * 60 * 1000).toISOString(),
+            parentId: 'default_parent',
           });
           
-          setCurrentChild({
-            id: '1',
-            name: '小明',
+          const childProfile = {
+            id: defaultChild.id,
+            name: defaultChild.name,
+            avatar: defaultChild.avatar,
             age: 5,
-            createdAt: new Date().toISOString(),
-          });
+            createdAt: defaultChild.createdAt,
+          };
+          addChild(childProfile);
+          setCurrentChild(childProfile);
         }
 
         setIsReady(true);

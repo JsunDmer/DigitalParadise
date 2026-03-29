@@ -17,7 +17,7 @@ const SOUND_CONFIGS: Record<SoundType, SoundConfig> = {
   },
   success: {
     source: require('../../assets/sounds/success.mp3') as number,
-    volume: 0.7,
+    volume: 0.4,
   },
   error: {
     source: require('../../assets/sounds/error.mp3') as number,

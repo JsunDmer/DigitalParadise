@@ -94,15 +94,15 @@ export const useAdditionGameStore = create<AdditionGameStore>((set, get) => ({
 
   selectAnswer: (answer) => {
     const state = get();
-    
-    if (state.isCompleted) return;
-    
+
+    if (state.isCompleted && state.isCorrect) return;
+
     const isCorrect = answer === state.correctAnswer;
-    
+
     set({
       selectedAnswer: answer,
       isCorrect,
-      isCompleted: true,
+      isCompleted: isCorrect, // 只有答对了才算完成
       stars: isCorrect ? 5 : 0,
     });
   },

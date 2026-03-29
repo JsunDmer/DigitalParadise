@@ -132,7 +132,7 @@ export default function AdditionGame() {
         title="➕ 趣味加法"
         showBack
         showStars
-        starsCount={level * 5}
+        starsCount={completedCount}
         onBackPress={handleBack}
       />
 
