@@ -7,7 +7,7 @@ import {
   Animated,
   View,
 } from 'react-native';
-import { colors, borderRadius, fontSizes, fontWeights, iconSizes } from '../../theme';
+import { colors, borderRadius, fontSizes, fontWeights, iconSizes, elementSpacing } from '../../theme';
 import { useSound } from '../../hooks';
 
 interface GameCardProps {
@@ -16,6 +16,8 @@ interface GameCardProps {
   stars?: number;
   showStars?: boolean;
   onPress: () => void;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
   color?: string;
   style?: ViewStyle;
   disabled?: boolean;
@@ -27,6 +29,8 @@ export default function GameCard({
   stars = 0,
   showStars = true,
   onPress,
+  accessibilityLabel,
+  accessibilityHint,
   color = colors.game.count,
   style,
   disabled = false,
@@ -78,6 +82,9 @@ export default function GameCard({
         disabled={disabled}
         activeOpacity={0.9}
         style={[styles.card, disabled && styles.disabled]}
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel ?? title}
+        accessibilityHint={accessibilityHint ?? `点击进入${title}`}
       >
         <View style={[styles.colorBar, { backgroundColor: color }]} />
         <Text style={styles.icon}>{icon}</Text>
@@ -93,8 +100,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.surface,
     borderRadius: borderRadius.xl,
-    padding: 20,
-    paddingTop: 24,
+    padding: elementSpacing.normal,
+    paddingTop: elementSpacing.relaxed,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -112,14 +119,14 @@ const styles = StyleSheet.create({
     height: 4,
   },
   icon: {
-    fontSize: 48,
-    marginBottom: 8,
+    fontSize: iconSizes.medium,
+    marginBottom: elementSpacing.tight / 2,
   },
   title: {
-    fontSize: 16,
+    fontSize: fontSizes.caption,
     fontWeight: fontWeights.bold,
     color: colors.text.primary,
-    marginBottom: 8,
+    marginBottom: elementSpacing.tight / 2,
     textAlign: 'center',
   },
   starsContainer: {
@@ -129,7 +136,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   star: {
-    fontSize: 16,
+    fontSize: fontSizes.caption,
   },
   disabled: {
     opacity: 0.5,

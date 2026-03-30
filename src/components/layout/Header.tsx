@@ -33,7 +33,11 @@ export default function Header({
 
       <View style={styles.rightSection}>
         {showStars && (
-          <View style={styles.starsContainer}>
+          <View
+            style={styles.starsContainer}
+            accessibilityRole="text"
+            accessibilityLabel={`当前星星数${starsCount}`}
+          >
             <Text style={styles.starIcon}>⭐</Text>
             <Text style={styles.starsCount}>{starsCount}</Text>
           </View>

@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  Dimensions,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, {
   useAnimatedStyle,
   withSequence,
@@ -19,13 +20,11 @@ import CompletionModal from '@/components/game/CompletionModal';
 import { useMatchingGameStore, useProgressStore, useUserStore } from '@/stores';
 import { useSound, useSpeech } from '@/hooks';
 import { colors, layout, spacing, borderRadius, fontSizes, fontWeights } from '@/theme';
-
-const { width, height } = Dimensions.get('window');
 const CARD_GAP = 12;
 const GRID_PADDING = 16;
 
 // 计算卡片尺寸，适配横屏和竖屏
-const calculateCardDimensions = () => {
+const calculateCardDimensions = (width: number, height: number) => {
   const isLandscape = width > height;
   const columns = isLandscape ? 8 : 4; // 横屏8列，竖屏4列
   const rows = isLandscape ? 2 : 4;    // 横屏2行，竖屏4行
@@ -42,8 +41,6 @@ const calculateCardDimensions = () => {
 
   return { cardSize, columns };
 };
-
-const { cardSize: CARD_SIZE, columns: COLUMNS } = calculateCardDimensions();
 
 interface ShakingCardProps {
   children: React.ReactNode;
@@ -74,8 +71,9 @@ function ShakingCard({ children, isShaking }: ShakingCardProps) {
 
 export default function MatchingGameScreen() {
   const router = useRouter();
+  const { width, height } = useWindowDimensions();
   const [lastMatchedCount, setLastMatchedCount] = useState(0);
-  const { playClick, playSuccess, playError } = useSound();
+  const { playClick, playSuccess } = useSound();
   const { speakNumber, speakText } = useSpeech();
   const completeLevel = useProgressStore((state) => state.completeLevel);
   const currentChild = useUserStore((state) => state.currentChild);
@@ -91,6 +89,11 @@ export default function MatchingGameScreen() {
     flipCard,
     resetGame,
   } = useMatchingGameStore();
+
+  const { cardSize: cardSize, columns } = useMemo(
+    () => calculateCardDimensions(width, height),
+    [width, height]
+  );
 
   useEffect(() => {
     initializeGame();
@@ -143,7 +146,7 @@ export default function MatchingGameScreen() {
   const remainingPairs = totalPairs - matchedPairs;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <Header
         title="🎯 数字配对"
         showBack
@@ -167,7 +170,7 @@ export default function MatchingGameScreen() {
               key={card.id}
               style={[
                 styles.cardWrapper,
-                { marginRight: (index + 1) % COLUMNS === 0 ? 0 : CARD_GAP },
+                { marginRight: (index + 1) % columns === 0 ? 0 : CARD_GAP },
               ]}
             >
               <ShakingCard isShaking={card.isShaking}>
@@ -177,7 +180,7 @@ export default function MatchingGameScreen() {
                   isMatched={card.isMatched}
                   onPress={() => handleCardPress(card.id)}
                   disabled={card.isMatched}
-                  style={{ width: CARD_SIZE, height: CARD_SIZE * 1.2 }}
+                  style={{ width: cardSize, height: cardSize * 1.2 }}
                 />
               </ShakingCard>
             </View>
@@ -194,7 +197,7 @@ export default function MatchingGameScreen() {
         onClose={handleClose}
         onContinue={handleContinue}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 

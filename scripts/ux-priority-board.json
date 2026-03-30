@@ -1,0 +1,34 @@
+{
+  "updatedAt": "2026-03-30",
+  "reviewCadence": "biweekly",
+  "p0": [
+    {
+      "id": "p0-core-flow-retry-coverage",
+      "title": "核心流程失败态覆盖重试入口",
+      "owner": "frontend",
+      "status": "done"
+    }
+  ],
+  "p1": [
+    {
+      "id": "p1-accessibility-core-path",
+      "title": "核心路径无障碍标签补齐",
+      "owner": "frontend",
+      "status": "done"
+    },
+    {
+      "id": "p1-matching-layout-responsive",
+      "title": "配对页动态尺寸与旋转适配",
+      "owner": "frontend",
+      "status": "done"
+    }
+  ],
+  "p2": [
+    {
+      "id": "p2-game-screen-state-unification",
+      "title": "三个游戏页统一加载/空态/错误态",
+      "owner": "frontend",
+      "status": "todo"
+    }
+  ]
+}

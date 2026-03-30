@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '@/components/layout/Header';
@@ -16,6 +16,10 @@ const COLUMNS = 5;
 
 export default function SequenceGameScreen() {
   const router = useRouter();
+  const { width, height } = useWindowDimensions();
+  const isLandscape = width > height;
+  const columns = isLandscape ? 7 : COLUMNS;
+  const gridGap = isLandscape ? 12 : BALL_SPACING;
   const [showModal, setShowModal] = useState(false);
   const { playClick, playSuccess, playError } = useSound();
   const { speakNumber, speakText } = useSpeech();
@@ -122,7 +126,7 @@ export default function SequenceGameScreen() {
         </Text>
       </View>
 
-      <View style={styles.hintArea}>
+      <View style={[styles.hintArea, isLandscape && styles.hintAreaLandscape]}>
         <Text style={styles.hintTitle}>按顺序点击数字！</Text>
         <View style={styles.nextNumberContainer}>
           <Text style={styles.nextNumberLabel}>下一个: </Text>
@@ -131,7 +135,17 @@ export default function SequenceGameScreen() {
       </View>
 
       <View style={styles.gameArea}>
-        <View style={styles.gridContainer}>{renderNumberBalls()}</View>
+        <View
+          style={[
+            styles.gridContainer,
+            {
+              gap: gridGap,
+              maxWidth: columns * (BALL_SIZE + gridGap),
+            },
+          ]}
+        >
+          {renderNumberBalls()}
+        </View>
       </View>
 
       <CompletionModal
@@ -215,6 +229,10 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  hintAreaLandscape: {
+    height: 86,
+    marginTop: spacing.sm,
+  },
   hintTitle: {
     fontSize: fontSizes.body.large,
     fontWeight: fontWeights.bold,
@@ -247,6 +265,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: BALL_SPACING,
-    maxWidth: COLUMNS * (BALL_SIZE + BALL_SPACING),
   },
 });

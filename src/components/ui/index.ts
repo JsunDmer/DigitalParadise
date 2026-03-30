@@ -5,3 +5,4 @@ export { default as StatsCard } from './StatsCard';
 export { default as WelcomeCard } from './WelcomeCard';
 export { default as AchievementEntry } from './AchievementEntry';
 export { default as SettingSwitch } from './SettingSwitch';
+export { default as FeedbackStateCard } from './FeedbackStateCard';

@@ -11,6 +11,7 @@ import { colors } from '@/theme';
 import { initService } from '@/services';
 import { useUserStore } from '@/stores';
 import { childService } from '@/services';
+import { markPerfEnd, markPerfStart } from '@/utils';
 
 export default function RootLayout() {
   const [isReady, setIsReady] = useState(false);
@@ -27,6 +28,7 @@ export default function RootLayout() {
   };
 
   const prepare = useCallback(async () => {
+    const perfStart = markPerfStart('app_bootstrap_ms');
     setError(null);
     setIsReady(false);
     setIsInitializing(true);
@@ -57,9 +59,11 @@ export default function RootLayout() {
       }
 
       setIsReady(true);
+      markPerfEnd('app_bootstrap_ms', perfStart);
     } catch (e) {
       console.error('Initialization error:', e);
       setError(getErrorMessage(e));
+      markPerfEnd('app_bootstrap_ms', perfStart);
     } finally {
       setIsInitializing(false);
     }

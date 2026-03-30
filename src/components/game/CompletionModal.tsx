@@ -114,6 +114,9 @@ export default function CompletionModal({
               pressed && styles.buttonPressed,
             ]}
             onPress={handleContinue}
+            accessibilityRole="button"
+            accessibilityLabel={buttonText}
+            accessibilityHint="点击进入下一步"
           >
             <Text style={styles.buttonText}>{buttonText}</Text>
           </Pressable>

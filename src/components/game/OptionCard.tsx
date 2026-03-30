@@ -117,6 +117,9 @@ export default function OptionCard({
       disabled={disabled}
       activeOpacity={0.8}
       style={style}
+      accessibilityRole="button"
+      accessibilityLabel={`答案选项${number}`}
+      accessibilityHint="点击选择这个答案"
     >
       <Animated.View
         style={[

@@ -41,6 +41,9 @@ export default function AchievementEntry({
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         activeOpacity={0.9}
+        accessibilityRole="button"
+        accessibilityLabel="进入成就墙"
+        accessibilityHint={`当前已获得${achievementCount}个成就徽章，点击查看详情`}
       >
         <LinearGradient
           colors={['#9013FE', '#A842FE']}

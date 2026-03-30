@@ -119,6 +119,9 @@ export default function NumberBall({
       disabled={disabled || isClicked}
       activeOpacity={0.8}
       style={style}
+      accessibilityRole="button"
+      accessibilityLabel={`数字球${number}`}
+      accessibilityHint={isClicked ? '该数字已选择' : '按顺序点击这个数字'}
     >
       <Animated.View
         style={[

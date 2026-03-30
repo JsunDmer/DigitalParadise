@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import {
@@ -20,6 +20,9 @@ const GAME_ITEMS = ['🍎', '🍊', '🍋', '🍇', '🍓', '🌟', '🎈', '�
 
 export default function CountingGame() {
   const router = useRouter();
+  const { width, height } = useWindowDimensions();
+  const isLandscape = width > height;
+  const targetNumberSize = Math.min(72, Math.max(48, Math.floor(Math.min(width, height) * 0.16)));
   const [showModal, setShowModal] = useState(false);
   const [itemIcon, setItemIcon] = useState('🍎');
   const { playClick, playSuccess } = useSound();
@@ -92,7 +95,7 @@ export default function CountingGame() {
   };
 
   const renderItems = () => {
-    const itemsPerRow = Math.min(4, targetNumber);
+    const itemsPerRow = Math.min(isLandscape ? 6 : 4, targetNumber);
     const rows: CountingItem[][] = [];
     
     for (let i = 0; i < items.length; i += itemsPerRow) {
@@ -171,9 +174,11 @@ export default function CountingGame() {
         </Text>
       </View>
 
-      <View style={styles.targetCard}>
+      <View style={[styles.targetCard, isLandscape && styles.targetCardLandscape]}>
         <Text style={styles.targetLabel}>请 数 到</Text>
-        <Text style={styles.targetNumber}>{targetNumber}</Text>
+        <Text style={[styles.targetNumber, { fontSize: targetNumberSize, lineHeight: targetNumberSize + 8 }]}>
+          {targetNumber}
+        </Text>
         <Text style={styles.targetHint}>👆 点击{itemIcon}数一数！</Text>
       </View>
 
@@ -185,7 +190,7 @@ export default function CountingGame() {
         <View style={styles.itemsGrid}>{renderItems()}</View>
       </ScrollView>
 
-      <View style={styles.counterArea}>
+      <View style={[styles.counterArea, isLandscape && styles.counterAreaLandscape]}>
         <Text style={styles.counterLabel}>当前计数: {currentCount}</Text>
         <ScrollView
           horizontal
@@ -227,6 +232,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
+  },
+  targetCardLandscape: {
+    height: 120,
   },
   targetLabel: {
     fontSize: 18,
@@ -273,6 +281,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
+  },
+  counterAreaLandscape: {
+    height: 84,
   },
   counterLabel: {
     fontSize: 20,

@@ -1,5 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, TextInput, Modal } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+  TextInput,
+  Modal,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Header from '../../src/components/layout/Header';
@@ -75,7 +86,13 @@ export default function ProfileScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <TouchableOpacity style={styles.avatarSection} onPress={() => setIsEditing(true)}>
+        <TouchableOpacity
+          style={styles.avatarSection}
+          onPress={() => setIsEditing(true)}
+          accessibilityRole="button"
+          accessibilityLabel="编辑小朋友信息"
+          accessibilityHint="点击修改姓名和年龄"
+        >
           <View style={styles.avatarContainer}>
             {currentChild?.avatar ? (
               <Image source={{ uri: currentChild.avatar }} style={styles.avatar} />
@@ -154,8 +171,15 @@ export default function ProfileScreen() {
         animationType="slide"
         onRequestClose={() => setIsEditing(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+        <KeyboardAvoidingView
+          style={styles.modalOverlay}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <ScrollView
+            contentContainerStyle={styles.modalScrollContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>修改小朋友信息</Text>
             
             <View style={styles.inputContainer}>
@@ -186,18 +210,23 @@ export default function ProfileScreen() {
               <TouchableOpacity
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => setIsEditing(false)}
+                accessibilityRole="button"
+                accessibilityLabel="取消编辑"
               >
                 <Text style={styles.cancelButtonText}>取消</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, styles.saveButton]}
                 onPress={handleSaveProfile}
+                accessibilityRole="button"
+                accessibilityLabel="保存信息"
               >
                 <Text style={styles.saveButtonText}>保存</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
   );
@@ -251,13 +280,13 @@ const styles = StyleSheet.create({
     fontSize: 40,
   },
   name: {
-    fontSize: 24,
+    fontSize: fontSizes.body.large,
     fontWeight: fontWeights.bold,
     color: colors.text.primary,
     marginBottom: 4,
   },
   age: {
-    fontSize: 16,
+    fontSize: fontSizes.caption,
     color: colors.text.secondary,
   },
   section: {
@@ -283,13 +312,16 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   editHint: {
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     color: colors.primary,
     marginTop: 8,
   },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalScrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.lg,

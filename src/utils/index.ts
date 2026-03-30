@@ -28,3 +28,4 @@ export function sleep(ms: number): Promise<void> {
 
 export * from './animations';
 export * from './constants';
+export * from './performance';
