@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,6 +9,7 @@ import { useSequenceGameStore } from '@/stores/useSequenceGameStore';
 import { useProgressStore, useUserStore } from '@/stores';
 import { colors, layout, spacing, borderRadius, fontSizes, fontWeights, elementSpacing } from '@/theme';
 import { useSound, useSpeech } from '@/hooks';
+import { initService } from '@/services';
 
 const BALL_SIZE = 72;
 const BALL_SPACING = 16;
@@ -21,9 +22,11 @@ export default function SequenceGameScreen() {
   const columns = isLandscape ? 7 : COLUMNS;
   const gridGap = isLandscape ? 12 : BALL_SPACING;
   const [showModal, setShowModal] = useState(false);
+  const completionSyncedRef = useRef(false);
   const { playClick, playSuccess, playError } = useSound();
   const { speakNumber, speakText } = useSpeech();
   const completeLevel = useProgressStore((state) => state.completeLevel);
+  const totalStars = useProgressStore((state) => state.totalStars);
   const currentChild = useUserStore((state) => state.currentChild);
 
   const {
@@ -39,8 +42,33 @@ export default function SequenceGameScreen() {
   } = useSequenceGameStore();
 
   useEffect(() => {
-    initGame(15);
+    initGame();
   }, [initGame]);
+
+  useEffect(() => {
+    if (!isCompleted) {
+      completionSyncedRef.current = false;
+      return;
+    }
+
+    if (completionSyncedRef.current) return;
+    completionSyncedRef.current = true;
+
+    const syncProgress = async () => {
+      if (currentChild) {
+        await initService.saveGameProgress(
+          currentChild.id,
+          'sequence',
+          level,
+          totalNumbers,
+          5,
+          true
+        );
+      }
+    };
+
+    syncProgress();
+  }, [isCompleted, currentChild, level, totalNumbers]);
 
   useEffect(() => {
     if (isCompleted) {
@@ -103,7 +131,7 @@ export default function SequenceGameScreen() {
         title="🔗 数字接龙"
         showBack
         showStars
-        starsCount={completedCount}
+        starsCount={totalStars}
         onBackPress={handleBackPress}
       />
 

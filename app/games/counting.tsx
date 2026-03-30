@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -15,6 +15,7 @@ import GameItem from '@/components/game/GameItem';
 import CompletionModal from '@/components/game/CompletionModal';
 import { useCountingGameStore, CountingItem, useProgressStore, useUserStore } from '@/stores';
 import { useSound, useSpeech } from '@/hooks';
+import { initService } from '@/services';
 
 const GAME_ITEMS = ['🍎', '🍊', '🍋', '🍇', '🍓', '🌟', '🎈', '🎁', '🧸'];
 
@@ -25,9 +26,11 @@ export default function CountingGame() {
   const targetNumberSize = Math.min(72, Math.max(48, Math.floor(Math.min(width, height) * 0.16)));
   const [showModal, setShowModal] = useState(false);
   const [itemIcon, setItemIcon] = useState('🍎');
+  const completionSyncedRef = useRef(false);
   const { playClick, playSuccess } = useSound();
   const { speakNumber, speakText } = useSpeech();
   const completeLevel = useProgressStore((state) => state.completeLevel);
+  const totalStars = useProgressStore((state) => state.totalStars);
   const currentChild = useUserStore((state) => state.currentChild);
 
   const {
@@ -49,6 +52,31 @@ export default function CountingGame() {
     setItemIcon(randomIcon);
     initGame(getRandomTarget(), randomIcon);
   }, []);
+
+  useEffect(() => {
+    if (!isCompleted) {
+      completionSyncedRef.current = false;
+      return;
+    }
+
+    if (completionSyncedRef.current) return;
+    completionSyncedRef.current = true;
+
+    const syncProgress = async () => {
+      if (currentChild) {
+        await initService.saveGameProgress(
+          currentChild.id,
+          'counting',
+          level,
+          currentCount,
+          stars,
+          true
+        );
+      }
+    };
+
+    syncProgress();
+  }, [isCompleted, currentChild, level, currentCount, stars]);
 
   useEffect(() => {
     if (isCompleted) {
@@ -76,10 +104,9 @@ export default function CountingGame() {
 
   const handleContinue = () => {
     setShowModal(false);
+    nextLevel();
     const randomIcon = GAME_ITEMS[Math.floor(Math.random() * GAME_ITEMS.length)];
     setItemIcon(randomIcon);
-    nextLevel();
-    initGame(getRandomTarget(), randomIcon);
   };
 
   const handleRestart = () => {
@@ -87,7 +114,6 @@ export default function CountingGame() {
     const randomIcon = GAME_ITEMS[Math.floor(Math.random() * GAME_ITEMS.length)];
     setItemIcon(randomIcon);
     resetGame();
-    initGame(getRandomTarget(), randomIcon);
   };
 
   const getRandomTarget = () => {
@@ -151,7 +177,7 @@ export default function CountingGame() {
         title="🔢 数数乐园"
         showBack
         showStars
-        starsCount={completedCount}
+        starsCount={totalStars}
         onBackPress={handleBack}
       />
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -20,6 +20,7 @@ import CompletionModal from '@/components/game/CompletionModal';
 import { useMatchingGameStore, useProgressStore, useUserStore } from '@/stores';
 import { useSound, useSpeech } from '@/hooks';
 import { colors, layout, spacing, borderRadius, fontSizes, fontWeights } from '@/theme';
+import { initService } from '@/services';
 const CARD_GAP = 12;
 const GRID_PADDING = 16;
 
@@ -73,6 +74,7 @@ export default function MatchingGameScreen() {
   const router = useRouter();
   const { width, height } = useWindowDimensions();
   const [lastMatchedCount, setLastMatchedCount] = useState(0);
+  const completionSyncedRef = useRef(false);
   const { playClick, playSuccess } = useSound();
   const { speakNumber, speakText } = useSpeech();
   const completeLevel = useProgressStore((state) => state.completeLevel);
@@ -82,6 +84,8 @@ export default function MatchingGameScreen() {
     cards,
     matchedPairs,
     totalPairs,
+    completedRounds,
+    level,
     moves,
     isCompleted,
     lastMatchedNumber,
@@ -101,6 +105,31 @@ export default function MatchingGameScreen() {
 
   // 监听配对成功
   useEffect(() => {
+    if (!isCompleted) {
+      completionSyncedRef.current = false;
+      return;
+    }
+
+    if (completionSyncedRef.current) return;
+    completionSyncedRef.current = true;
+
+    const syncProgress = async () => {
+      if (currentChild) {
+        await initService.saveGameProgress(
+          currentChild.id,
+          'matching',
+          level,
+          Math.max(0, totalPairs * 2 - moves),
+          calculateRoundStars(moves),
+          true
+        );
+      }
+    };
+
+    syncProgress();
+  }, [isCompleted, currentChild, level, moves, totalPairs]);
+
+  useEffect(() => {
     if (matchedPairs > lastMatchedCount) {
       // 播放成功音效和语音播报
       playSuccess();
@@ -111,14 +140,14 @@ export default function MatchingGameScreen() {
     }
 
     if (isCompleted) {
-      // 保存进度：完成一关加1颗星
-      if (currentChild) {
-        completeLevel('matching-1', 1);
+      // 每完成5次算一关，达到5次倍数时保存进度
+      if (currentChild && (completedRounds + 1) % 5 === 0) {
+        completeLevel(`matching-${level}`, 1);
       }
 
       speakText('太棒了！你完成了所有配对！');
     }
-  }, [matchedPairs, isCompleted, lastMatchedCount, playSuccess, speakNumber, speakText, lastMatchedNumber, currentChild, completeLevel]);
+  }, [matchedPairs, isCompleted, lastMatchedCount, playSuccess, speakNumber, speakText, lastMatchedNumber, currentChild, completeLevel, completedRounds, level]);
 
   const handleBackPress = () => {
     router.back();

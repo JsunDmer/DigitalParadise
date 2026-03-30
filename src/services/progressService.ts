@@ -52,6 +52,15 @@ export const progressService = {
     return allProgress.find(p => p.childId === childId && p.gameId === gameId) || null;
   },
 
+  async getByChildGameAndLevel(childId: string, gameId: string, level: number): Promise<GameProgress | null> {
+    const allProgress = await getAllProgress();
+    return (
+      allProgress.find(
+        (p) => p.childId === childId && p.gameId === gameId && p.level === level
+      ) || null
+    );
+  },
+
   async getCompletedByChildId(childId: string): Promise<GameProgress[]> {
     const allProgress = await getAllProgress();
     return allProgress
@@ -77,14 +86,13 @@ export const progressService = {
   },
 
   async upsert(input: GameProgressCreateInput): Promise<GameProgress> {
-    const existing = await this.getByChildAndGame(input.childId, input.gameId);
+    const existing = await this.getByChildGameAndLevel(input.childId, input.gameId, input.level);
     
     if (existing) {
       const updated = await this.update(existing.id, {
-        level: input.level,
-        score: input.score,
-        stars: input.stars,
-        completed: input.completed,
+        score: Math.max(existing.score, input.score),
+        stars: existing.stars + input.stars,
+        completed: existing.completed || input.completed,
         data: input.data,
       });
       return updated!;

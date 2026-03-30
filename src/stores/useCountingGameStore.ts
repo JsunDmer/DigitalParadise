@@ -40,6 +40,12 @@ const getRandomTarget = (min: number = 3, max: number = 10): number => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
+const getTargetRangeByLevel = (level: number): { min: number; max: number } => {
+  if (level <= 2) return { min: 3, max: 8 };
+  if (level <= 4) return { min: 4, max: 10 };
+  return { min: 5, max: 12 };
+};
+
 const initialState: CountingGameState = {
   targetNumber: 5,
   items: generateItems(5),
@@ -92,7 +98,8 @@ export const useCountingGameStore = create<CountingGameStore>((set, get) => ({
   },
 
   resetGame: () => {
-    const newTarget = getRandomTarget(3, 10);
+    const range = getTargetRangeByLevel(1);
+    const newTarget = getRandomTarget(range.min, range.max);
     set({
       targetNumber: newTarget,
       items: generateItems(newTarget),
@@ -107,13 +114,15 @@ export const useCountingGameStore = create<CountingGameStore>((set, get) => ({
   nextLevel: () => {
     const state = get();
     const newCompletedCount = state.completedCount + 1;
-    const newTarget = getRandomTarget(3, 10);
+    const newLevel = Math.floor(newCompletedCount / 5) + 1;
+    const range = getTargetRangeByLevel(newLevel);
+    const newTarget = getRandomTarget(range.min, range.max);
     set({
       targetNumber: newTarget,
       items: generateItems(newTarget),
       currentCount: 0,
       isCompleted: false,
-      level: Math.floor(newCompletedCount / 5) + 1, // 每5次算一关
+      level: newLevel, // 每5次算一关
       stars: 0,
       completedCount: newCompletedCount,
     });

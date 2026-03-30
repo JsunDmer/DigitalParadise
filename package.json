@@ -8,7 +8,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "check:ux": "node scripts/ux-regression-check.cjs",
-    "check:quality": "npm run check:ux",
+    "check:game-design": "node scripts/game-design-regression-check.cjs",
+    "check:quality": "npm run check:ux && npm run check:game-design",
     "ux:review:new": "node scripts/create-ux-review.cjs"
   },
   "expo": {

@@ -13,6 +13,8 @@ interface MatchingGameState {
   flippedCards: number[];
   matchedPairs: number;
   totalPairs: number;
+  completedRounds: number;
+  level: number;
   moves: number;
   isLocked: boolean;
   isCompleted: boolean;
@@ -28,8 +30,14 @@ interface MatchingGameActions {
 
 type MatchingGameStore = MatchingGameState & MatchingGameActions;
 
-const generateCards = (): Card[] => {
-  const numbers = [1, 2, 3, 4, 5, 6, 7, 8];
+const getPairsByLevel = (level: number): number => {
+  if (level <= 2) return 6;
+  if (level <= 4) return 8;
+  return 10;
+};
+
+const generateCards = (pairCount: number): Card[] => {
+  const numbers = Array.from({ length: pairCount }, (_, index) => index + 1);
   const cardPairs = [...numbers, ...numbers];
   
   for (let i = cardPairs.length - 1; i > 0; i--) {
@@ -50,7 +58,9 @@ const initialState: MatchingGameState = {
   cards: [],
   flippedCards: [],
   matchedPairs: 0,
-  totalPairs: 8,
+  totalPairs: 6,
+  completedRounds: 0,
+  level: 1,
   moves: 0,
   isLocked: false,
   isCompleted: false,
@@ -61,14 +71,20 @@ export const useMatchingGameStore = create<MatchingGameStore>((set, get) => ({
   ...initialState,
 
   initializeGame: () => {
-    set({
-      cards: generateCards(),
+    set((state) => {
+      const targetPairs = getPairsByLevel(state.level);
+      return {
+      cards: generateCards(targetPairs),
       flippedCards: [],
       matchedPairs: 0,
+      totalPairs: targetPairs,
       moves: 0,
       isLocked: false,
       isCompleted: false,
       lastMatchedNumber: null,
+      completedRounds: state.completedRounds,
+      level: state.level,
+    };
     });
   },
 
@@ -158,10 +174,22 @@ export const useMatchingGameStore = create<MatchingGameStore>((set, get) => ({
   },
 
   resetGame: () => {
-    set({
-      ...initialState,
-      cards: generateCards(),
-      lastMatchedNumber: null,
+    set((state) => {
+      const newCompletedRounds = state.completedRounds + 1;
+      const newLevel = Math.floor(newCompletedRounds / 5) + 1;
+      const targetPairs = getPairsByLevel(newLevel);
+      return {
+        cards: generateCards(targetPairs),
+        flippedCards: [],
+        matchedPairs: 0,
+        totalPairs: targetPairs,
+        completedRounds: newCompletedRounds,
+        level: newLevel,
+        moves: 0,
+        isLocked: false,
+        isCompleted: false,
+        lastMatchedNumber: null,
+      };
     });
   },
 }));

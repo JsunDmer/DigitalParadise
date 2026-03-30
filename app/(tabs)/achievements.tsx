@@ -16,6 +16,7 @@ import {
 import Header from '@/components/layout/Header';
 import { FeedbackStateCard } from '@/components/ui';
 import { useUserStore, useProgressStore } from '@/stores';
+import { ACHIEVEMENTS } from '@/stores/useAchievementStore';
 import { achievementService } from '@/services';
 import { markPerfEnd, markPerfStart } from '@/utils';
 
@@ -190,7 +191,7 @@ export default function AchievementsScreen() {
               <View style={styles.statsRow}>
                 <View style={styles.statItem}>
                   <Text style={styles.statLabel}>已获得</Text>
-                  <Text style={styles.statValue}>{achievementCount}/20</Text>
+                  <Text style={styles.statValue}>{achievementCount}/{ACHIEVEMENTS.length}</Text>
                 </View>
                 <View style={styles.statDivider} />
                 <View style={styles.statItem}>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -15,15 +15,18 @@ import OptionCard from '@/components/game/OptionCard';
 import CompletionModal from '@/components/game/CompletionModal';
 import { useAdditionGameStore, useProgressStore, useUserStore } from '@/stores';
 import { useSound, useSpeech } from '@/hooks';
+import { initService } from '@/services';
 
 export default function AdditionGame() {
   const router = useRouter();
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
   const [showModal, setShowModal] = useState(false);
+  const completionSyncedRef = useRef(false);
   const { playClick, playSuccess, playError } = useSound();
   const { speakNumber, speakText } = useSpeech();
   const completeLevel = useProgressStore((state) => state.completeLevel);
+  const totalStars = useProgressStore((state) => state.totalStars);
   const currentChild = useUserStore((state) => state.currentChild);
 
   const {
@@ -49,6 +52,31 @@ export default function AdditionGame() {
   }, []);
 
   useEffect(() => {
+    if (!(isCompleted && isCorrect)) {
+      completionSyncedRef.current = false;
+      return;
+    }
+
+    if (completionSyncedRef.current) return;
+    completionSyncedRef.current = true;
+
+    const syncProgress = async () => {
+      if (currentChild) {
+        await initService.saveGameProgress(
+          currentChild.id,
+          'addition',
+          level,
+          num1 + num2,
+          stars,
+          true
+        );
+      }
+    };
+
+    syncProgress();
+  }, [isCompleted, isCorrect, currentChild, level, num1, num2, stars]);
+
+  useEffect(() => {
     if (isCompleted && isCorrect) {
       // 每完成5次算一关，达到5次倍数时保存进度
       if (currentChild && (completedCount + 1) % 5 === 0) {
@@ -65,10 +93,8 @@ export default function AdditionGame() {
         setShowModal(true);
       }, 2000);
       return () => clearTimeout(timer);
-    } else if (isCompleted && !isCorrect) {
-      playError();
     }
-  }, [isCompleted, isCorrect, playError, speakText, num1, num2, level, currentChild, completeLevel, completedCount]);
+  }, [isCompleted, isCorrect, speakText, num1, num2, level, currentChild, completeLevel, completedCount]);
 
   const handleBack = () => {
     router.back();
@@ -134,7 +160,7 @@ export default function AdditionGame() {
         title="➕ 趣味加法"
         showBack
         showStars
-        starsCount={completedCount}
+        starsCount={totalStars}
         onBackPress={handleBack}
       />
 
