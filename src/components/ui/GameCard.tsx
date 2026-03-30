@@ -13,7 +13,8 @@ import { useSound } from '../../hooks';
 interface GameCardProps {
   icon: string;
   title: string;
-  stars: number;
+  stars?: number;
+  showStars?: boolean;
   onPress: () => void;
   color?: string;
   style?: ViewStyle;
@@ -23,7 +24,8 @@ interface GameCardProps {
 export default function GameCard({
   icon,
   title,
-  stars,
+  stars = 0,
+  showStars = true,
   onPress,
   color = colors.game.count,
   style,
@@ -80,7 +82,7 @@ export default function GameCard({
         <View style={[styles.colorBar, { backgroundColor: color }]} />
         <Text style={styles.icon}>{icon}</Text>
         <Text style={styles.title}>{title}</Text>
-        <View style={styles.starsContainer}>{renderStars()}</View>
+        {showStars && <View style={styles.starsContainer}>{renderStars()}</View>}
       </TouchableOpacity>
     </Animated.View>
   );

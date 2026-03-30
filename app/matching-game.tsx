@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -74,7 +74,6 @@ function ShakingCard({ children, isShaking }: ShakingCardProps) {
 
 export default function MatchingGameScreen() {
   const router = useRouter();
-  const [starsCount, setStarsCount] = useState(0);
   const [lastMatchedCount, setLastMatchedCount] = useState(0);
   const { playClick, playSuccess, playError } = useSound();
   const { speakNumber, speakText } = useSpeech();
@@ -127,9 +126,13 @@ export default function MatchingGameScreen() {
     flipCard(cardId);
   };
 
+  const calculateRoundStars = (currentMoves: number) => {
+    return Math.min(5, Math.max(1, 6 - Math.floor(currentMoves / 8)));
+  };
+
+  const realtimeStars = moves === 0 ? 0 : calculateRoundStars(moves);
+
   const handleContinue = () => {
-    const stars = Math.min(5, Math.max(1, 6 - Math.floor(moves / 8)));
-    setStarsCount(stars);
     resetGame();
   };
 
@@ -145,7 +148,7 @@ export default function MatchingGameScreen() {
         title="🎯 数字配对"
         showBack
         showStars
-        starsCount={starsCount}
+        starsCount={realtimeStars}
         onBackPress={handleBackPress}
       />
 
@@ -186,7 +189,7 @@ export default function MatchingGameScreen() {
         visible={isCompleted}
         title="太棒了！"
         description={`你用 ${moves} 步完成了配对！`}
-        stars={Math.min(5, Math.max(1, 6 - Math.floor(moves / 8)))}
+        stars={calculateRoundStars(moves)}
         buttonText="继续挑战"
         onClose={handleClose}
         onContinue={handleContinue}

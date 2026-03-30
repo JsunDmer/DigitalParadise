@@ -52,7 +52,6 @@ export default function HomeScreen() {
   const totalStars = useProgressStore((state) => state.totalStars);
   const completedLevels = useProgressStore((state) => state.completedLevels);
   const learnedNumbers = useProgressStore((state) => state.learnedNumbers);
-  const levelProgress = useProgressStore((state) => state.levelProgress);
   const [achievementCount, setAchievementCount] = useState(0);
 
   useEffect(() => {
@@ -68,11 +67,6 @@ export default function HomeScreen() {
     };
     loadAchievementCount();
   }, [currentChild]);
-
-  const getGameStars = (gameId: string) => {
-    const progress = levelProgress.find((p) => p.levelId.startsWith(gameId));
-    return progress?.stars || 0;
-  };
 
   const handleGamePress = (route: string) => {
     router.push(route as any);
@@ -121,7 +115,7 @@ export default function HomeScreen() {
                 key={game.id}
                 icon={game.icon}
                 title={game.title}
-                stars={getGameStars(game.id)}
+                showStars={false}
                 color={game.color}
                 onPress={() => handleGamePress(game.route)}
                 style={styles.gameCard}

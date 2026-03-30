@@ -37,14 +37,20 @@ interface BadgeProps {
   label: string;
   unlocked: boolean;
   color: string;
+  threshold: number;
+  completedLevels: number;
 }
 
-function Badge({ icon, label, unlocked, color }: BadgeProps) {
+function Badge({ icon, label, unlocked, color, threshold, completedLevels }: BadgeProps) {
+  const remainingLevels = Math.max(0, threshold - completedLevels);
+
   return (
     <View style={[styles.badge, unlocked && styles.badgeUnlocked]}>
       <View style={[styles.badgeIconContainer, { backgroundColor: unlocked ? color : colors.locked }]}>
         <Text style={styles.badgeIcon}>{icon}</Text>
       </View>
+      <Text style={styles.badgeLabel}>{label}</Text>
+      {!unlocked && <Text style={styles.badgeHint}>还差{remainingLevels}关</Text>}
       {!unlocked && (
         <View style={styles.lockOverlay}>
           <Text style={styles.lockIcon}>🔒</Text>
@@ -76,6 +82,8 @@ function BadgeSection({ title, color, completedLevels }: BadgeSectionProps) {
             label={level.label}
             unlocked={getUnlockedCount(level.threshold)}
             color={color}
+            threshold={level.threshold}
+            completedLevels={completedLevels}
           />
         ))}
       </View>
@@ -233,17 +241,17 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.body.large,
     fontWeight: fontWeights.bold,
     color: colors.text.primary,
-    marginBottom: elementSpacing.small,
+    marginBottom: elementSpacing.tight,
   },
   badgeGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   badge: {
-    width: 56,
-    height: 56,
+    width: 64,
+    minHeight: 100,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     position: 'relative',
   },
   badgeUnlocked: {
@@ -260,14 +268,29 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    marginBottom: 6,
   },
   badgeIcon: {
     fontSize: 28,
   },
+  badgeLabel: {
+    fontSize: 12,
+    fontWeight: fontWeights.medium,
+    color: colors.text.primary,
+    textAlign: 'center',
+    lineHeight: 16,
+  },
+  badgeHint: {
+    marginTop: 2,
+    fontSize: 11,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    lineHeight: 14,
+  },
   lockOverlay: {
     position: 'absolute',
-    bottom: 0,
-    right: 0,
+    top: 32,
+    right: 4,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: 12,
     padding: 4,
