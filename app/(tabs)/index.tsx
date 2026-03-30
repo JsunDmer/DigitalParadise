@@ -4,16 +4,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import {
   colors,
-  layout,
   fontSizes,
   fontWeights,
-  iconSizes,
   elementSpacing,
   pageMargin,
+  layout,
+  iconSizes,
 } from '@/theme';
-import { GameCard, WelcomeCard, AchievementEntry } from '@/components/ui';
+import { GameCard, WelcomeCard, AchievementEntry, FeedbackStateCard } from '@/components/ui';
 import { useUserStore, useProgressStore } from '@/stores';
 import { achievementService } from '@/services';
+import { markPerfEnd, markPerfStart } from '@/utils';
 
 const GAMES = [
   {
@@ -52,26 +53,69 @@ export default function HomeScreen() {
   const totalStars = useProgressStore((state) => state.totalStars);
   const completedLevels = useProgressStore((state) => state.completedLevels);
   const learnedNumbers = useProgressStore((state) => state.learnedNumbers);
-  const levelProgress = useProgressStore((state) => state.levelProgress);
   const [achievementCount, setAchievementCount] = useState(0);
+  const [isLoadingAchievements, setIsLoadingAchievements] = useState(true);
+  const [achievementError, setAchievementError] = useState<string | null>(null);
+
+  const loadAchievementCount = async () => {
+    const perfStart = markPerfStart('home_achievement_load_ms');
+    if (!currentChild) {
+      setAchievementCount(0);
+      setIsLoadingAchievements(false);
+      setAchievementError(null);
+      markPerfEnd('home_achievement_load_ms', perfStart);
+      return;
+    }
+
+    setIsLoadingAchievements(true);
+    setAchievementError(null);
+    try {
+      const count = await achievementService.getCountByChildId(currentChild.id);
+      setAchievementCount(count);
+    } catch (e) {
+      console.error('Failed to load achievements:', e);
+      setAchievementError('成就加载失败，请重试。');
+    } finally {
+      setIsLoadingAchievements(false);
+      markPerfEnd('home_achievement_load_ms', perfStart);
+    }
+  };
 
   useEffect(() => {
-    const loadAchievementCount = async () => {
-      if (currentChild) {
-        try {
-          const count = await achievementService.getCountByChildId(currentChild.id);
-          setAchievementCount(count);
-        } catch (e) {
-          console.error('Failed to load achievements:', e);
-        }
-      }
-    };
     loadAchievementCount();
   }, [currentChild]);
 
-  const getGameStars = (gameId: string) => {
-    const progress = levelProgress.find((p) => p.levelId.startsWith(gameId));
-    return progress?.stars || 0;
+  const renderAchievementSection = () => {
+    if (isLoadingAchievements) {
+      return (
+        <FeedbackStateCard
+          type="loading"
+          title="正在加载成就"
+          message="马上就好，正在准备你的成就墙。"
+          style={styles.achievementEntry}
+        />
+      );
+    }
+
+    if (achievementError) {
+      return (
+        <FeedbackStateCard
+          type="error"
+          title="成就加载失败"
+          message={achievementError}
+          onRetry={loadAchievementCount}
+          style={styles.achievementEntry}
+        />
+      );
+    }
+
+    return (
+      <AchievementEntry
+        achievementCount={achievementCount}
+        onPress={handleAchievementPress}
+        style={styles.achievementEntry}
+      />
+    );
   };
 
   const handleGamePress = (route: string) => {
@@ -95,7 +139,13 @@ export default function HomeScreen() {
           <Text style={styles.logoEmoji}>🔢</Text>
           <Text style={styles.logoText}>数字乐园</Text>
         </View>
-        <TouchableOpacity onPress={handleAvatarPress} style={styles.avatarContainer}>
+        <TouchableOpacity
+          onPress={handleAvatarPress}
+          style={styles.avatarContainer}
+          accessibilityRole="button"
+          accessibilityLabel="进入我的档案"
+          accessibilityHint="点击查看和编辑小朋友信息"
+        >
           <Text style={styles.avatar}>👶</Text>
         </TouchableOpacity>
       </View>
@@ -105,6 +155,15 @@ export default function HomeScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {!currentChild && (
+          <FeedbackStateCard
+            type="empty"
+            title="还没有小朋友档案"
+            message="请先进入我的档案创建或完善信息。"
+            style={styles.welcomeCard}
+          />
+        )}
+
         <WelcomeCard
           userName={currentChild?.name || '小朋友'}
           stars={totalStars}
@@ -121,20 +180,17 @@ export default function HomeScreen() {
                 key={game.id}
                 icon={game.icon}
                 title={game.title}
-                stars={getGameStars(game.id)}
+                showStars={false}
                 color={game.color}
                 onPress={() => handleGamePress(game.route)}
                 style={styles.gameCard}
+                accessibilityLabel={`进入${game.title}`}
               />
             ))}
           </View>
         </View>
 
-        <AchievementEntry
-          achievementCount={achievementCount}
-          onPress={handleAchievementPress}
-          style={styles.achievementEntry}
-        />
+        {renderAchievementSection()}
       </ScrollView>
 
     </SafeAreaView>

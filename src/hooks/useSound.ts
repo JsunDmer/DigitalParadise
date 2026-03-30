@@ -35,6 +35,7 @@ export function useSound() {
   const soundsRef = useRef<Map<SoundType, Audio.Sound>>(new Map());
   const bgMusicRef = useRef<Audio.Sound | null>(null);
   const isInitializedRef = useRef(false);
+  const lastPlayAtRef = useRef<Map<SoundType, number>>(new Map());
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
 
   useEffect(() => {
@@ -98,6 +99,12 @@ export function useSound() {
       if (!soundEnabled) return;
 
       try {
+        const now = Date.now();
+        const lastPlayedAt = lastPlayAtRef.current.get(type) ?? 0;
+        if (type === 'click' && now - lastPlayedAt < 70) {
+          return;
+        }
+
         const sound = await loadSound(type);
         if (!sound) return;
 
@@ -107,6 +114,7 @@ export function useSound() {
         await sound.setVolumeAsync(finalVolume);
         await sound.setPositionAsync(0);
         await sound.playAsync();
+        lastPlayAtRef.current.set(type, now);
       } catch (error) {
         console.error(`Failed to play sound: ${type}`, error);
       }

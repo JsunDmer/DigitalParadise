@@ -1,0 +1,23 @@
+{
+  "sprint": "2026-W14",
+  "reviewWindow": "biweekly",
+  "metrics": {
+    "app_bootstrap_ms": 0,
+    "home_achievement_load_ms": 0,
+    "achievement_screen_load_ms": 0,
+    "coreFlowBlockers": 0,
+    "accessibilityCoveragePercent": 0
+  },
+  "issues": {
+    "p0": [],
+    "p1": [],
+    "p2": []
+  },
+  "actions": [
+    {
+      "owner": "",
+      "task": "",
+      "eta": ""
+    }
+  ]
+}

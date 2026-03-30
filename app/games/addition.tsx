@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import {
@@ -15,13 +15,18 @@ import OptionCard from '@/components/game/OptionCard';
 import CompletionModal from '@/components/game/CompletionModal';
 import { useAdditionGameStore, useProgressStore, useUserStore } from '@/stores';
 import { useSound, useSpeech } from '@/hooks';
+import { initService } from '@/services';
 
 export default function AdditionGame() {
   const router = useRouter();
+  const { width, height } = useWindowDimensions();
+  const isLandscape = width > height;
   const [showModal, setShowModal] = useState(false);
+  const completionSyncedRef = useRef(false);
   const { playClick, playSuccess, playError } = useSound();
   const { speakNumber, speakText } = useSpeech();
   const completeLevel = useProgressStore((state) => state.completeLevel);
+  const totalStars = useProgressStore((state) => state.totalStars);
   const currentChild = useUserStore((state) => state.currentChild);
 
   const {
@@ -47,6 +52,31 @@ export default function AdditionGame() {
   }, []);
 
   useEffect(() => {
+    if (!(isCompleted && isCorrect)) {
+      completionSyncedRef.current = false;
+      return;
+    }
+
+    if (completionSyncedRef.current) return;
+    completionSyncedRef.current = true;
+
+    const syncProgress = async () => {
+      if (currentChild) {
+        await initService.saveGameProgress(
+          currentChild.id,
+          'addition',
+          level,
+          num1 + num2,
+          stars,
+          true
+        );
+      }
+    };
+
+    syncProgress();
+  }, [isCompleted, isCorrect, currentChild, level, num1, num2, stars]);
+
+  useEffect(() => {
     if (isCompleted && isCorrect) {
       // 每完成5次算一关，达到5次倍数时保存进度
       if (currentChild && (completedCount + 1) % 5 === 0) {
@@ -63,10 +93,8 @@ export default function AdditionGame() {
         setShowModal(true);
       }, 2000);
       return () => clearTimeout(timer);
-    } else if (isCompleted && !isCorrect) {
-      playError();
     }
-  }, [isCompleted, isCorrect, playError, speakText, num1, num2, level, currentChild, completeLevel, completedCount]);
+  }, [isCompleted, isCorrect, speakText, num1, num2, level, currentChild, completeLevel, completedCount]);
 
   const handleBack = () => {
     router.back();
@@ -132,62 +160,68 @@ export default function AdditionGame() {
         title="➕ 趣味加法"
         showBack
         showStars
-        starsCount={completedCount}
+        starsCount={totalStars}
         onBackPress={handleBack}
       />
 
-      {/* 关卡进度条 */}
-      <View style={styles.progressContainer}>
-        <View style={styles.levelRow}>
-          <Text style={styles.levelText}>第 {level} 关</Text>
-          <Text style={styles.countText}>{completedCount % 5}/5</Text>
-        </View>
-        <View style={styles.progressBarBackground}>
-          <View
-            style={[
-              styles.progressBarFill,
-              { width: `${((completedCount % 5) / 5) * 100}%` },
-            ]}
-          />
-        </View>
-        <Text style={styles.progressText}>
-          已完成 {completedCount} 次，再完成 {5 - (completedCount % 5)} 次升级！
-        </Text>
-      </View>
-
-      {/* 故事场景卡片 */}
-      <View style={styles.storyCard}>
-        <Text style={styles.storyText}>
-          小明有 {num1} 个{itemIcon1}，又得到了 {num2} 个{itemIcon1}
-        </Text>
-        <Text style={styles.storyQuestion}>一共有多少个呢？</Text>
-      </View>
-
-      {/* 物品分组展示 */}
-      <View style={styles.groupsContainer}>
-        <View style={styles.groupBox}>
-          <Text style={styles.groupLabel}>第一组</Text>
-          <View style={styles.groupItems}>
-            {renderItems(num1, itemIcon1)}
+      <ScrollView
+        style={styles.contentScroll}
+        contentContainerStyle={styles.contentScrollContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* 关卡进度条 */}
+        <View style={styles.progressContainer}>
+          <View style={styles.levelRow}>
+            <Text style={styles.levelText}>第 {level} 关</Text>
+            <Text style={styles.countText}>{completedCount % 5}/5</Text>
           </View>
-          <Text style={styles.groupCount}>{num1}</Text>
-        </View>
-
-        <Text style={styles.plusSign}>+</Text>
-
-        <View style={styles.groupBox}>
-          <Text style={styles.groupLabel}>第二组</Text>
-          <View style={styles.groupItems}>
-            {renderItems(num2, itemIcon1)}
+          <View style={styles.progressBarBackground}>
+            <View
+              style={[
+                styles.progressBarFill,
+                { width: `${((completedCount % 5) / 5) * 100}%` },
+              ]}
+            />
           </View>
-          <Text style={styles.groupCount}>{num2}</Text>
+          <Text style={styles.progressText}>
+            已完成 {completedCount} 次，再完成 {5 - (completedCount % 5)} 次升级！
+          </Text>
         </View>
-      </View>
 
-      {/* 答案选项 */}
-      <View style={styles.answersContainer}>
-        {renderOptions()}
-      </View>
+        {/* 故事场景卡片 */}
+        <View style={[styles.storyCard, isLandscape && styles.storyCardLandscape]}>
+          <Text style={styles.storyText}>
+            小明有 {num1} 个{itemIcon1}，又得到了 {num2} 个{itemIcon1}
+          </Text>
+          <Text style={styles.storyQuestion}>一共有多少个呢？</Text>
+        </View>
+
+        {/* 物品分组展示 */}
+        <View style={[styles.groupsContainer, isLandscape && styles.groupsContainerLandscape]}>
+          <View style={styles.groupBox}>
+            <Text style={styles.groupLabel}>第一组</Text>
+            <View style={styles.groupItems}>
+              {renderItems(num1, itemIcon1)}
+            </View>
+            <Text style={styles.groupCount}>{num1}</Text>
+          </View>
+
+          <Text style={styles.plusSign}>+</Text>
+
+          <View style={styles.groupBox}>
+            <Text style={styles.groupLabel}>第二组</Text>
+            <View style={styles.groupItems}>
+              {renderItems(num2, itemIcon1)}
+            </View>
+            <Text style={styles.groupCount}>{num2}</Text>
+          </View>
+        </View>
+
+        {/* 答案选项 */}
+        <View style={styles.answersContainer}>
+          {renderOptions()}
+        </View>
+      </ScrollView>
 
       <CompletionModal
         visible={showModal}
@@ -207,10 +241,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  contentScroll: {
+    flex: 1,
+  },
+  contentScrollContainer: {
+    paddingBottom: elementSpacing.relaxed,
+  },
   storyCard: {
     backgroundColor: colors.game.addition,
     marginHorizontal: elementSpacing.normal,
-    marginTop: elementSpacing.small,
+    marginTop: elementSpacing.tight,
     padding: elementSpacing.normal,
     borderRadius: borderRadius.xl,
     alignItems: 'center',
@@ -220,29 +260,36 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 5,
   },
+  storyCardLandscape: {
+    marginTop: elementSpacing.normal,
+    paddingVertical: elementSpacing.tight,
+  },
   storyText: {
-    fontSize: 16,
-    color: '#FFFFFF',
+    fontSize: fontSizes.caption,
+    color: colors.surface,
     textAlign: 'center',
     lineHeight: 24,
-    marginBottom: 8,
+    marginBottom: elementSpacing.tight / 2,
   },
   storyQuestion: {
-    fontSize: 18,
+    fontSize: fontSizes.body.small,
     fontWeight: fontWeights.bold,
-    color: '#FFFFFF',
+    color: colors.surface,
   },
   groupsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
     marginHorizontal: elementSpacing.normal,
-    marginTop: elementSpacing.small,
+    marginTop: elementSpacing.tight,
+  },
+  groupsContainerLandscape: {
+    justifyContent: 'space-between',
   },
   groupBox: {
     backgroundColor: colors.surface,
     borderRadius: borderRadius.lg,
-    padding: 12,
+    padding: elementSpacing.tight,
     alignItems: 'center',
     minWidth: 100,
     shadowColor: '#000',
@@ -252,34 +299,34 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   groupLabel: {
-    fontSize: 12,
+    fontSize: fontSizes.caption,
     color: colors.text.secondary,
-    marginBottom: 8,
+    marginBottom: elementSpacing.tight / 2,
   },
   groupItems: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    gap: 4,
-    marginBottom: 8,
+    gap: elementSpacing.tight / 4,
+    marginBottom: elementSpacing.tight / 2,
   },
   itemIcon: {
-    fontSize: 24,
+    fontSize: fontSizes.body.large,
   },
   groupCount: {
-    fontSize: 24,
+    fontSize: fontSizes.body.large,
     fontWeight: fontWeights.bold,
     color: colors.game.addition,
   },
   plusSign: {
-    fontSize: 36,
+    fontSize: fontSizes.title.small,
     fontWeight: fontWeights.bold,
     color: colors.game.addition,
   },
   answersContainer: {
-    flex: 1,
     justifyContent: 'center',
     paddingHorizontal: elementSpacing.normal,
+    marginTop: elementSpacing.normal,
   },
   optionRow: {
     flexDirection: 'row',
@@ -291,7 +338,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     marginHorizontal: elementSpacing.normal,
     marginBottom: elementSpacing.normal,
-    padding: 16,
+    padding: elementSpacing.tight,
     borderRadius: borderRadius.lg,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -306,12 +353,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   levelText: {
-    fontSize: 18,
+    fontSize: fontSizes.body.small,
     fontWeight: fontWeights.bold,
     color: colors.text.primary,
   },
   countText: {
-    fontSize: 14,
+    fontSize: fontSizes.caption,
     fontWeight: fontWeights.bold,
     color: colors.primary,
     backgroundColor: colors.background,
@@ -332,7 +379,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   progressText: {
-    fontSize: 13,
+    fontSize: fontSizes.caption,
     color: colors.text.secondary,
     textAlign: 'center',
   },

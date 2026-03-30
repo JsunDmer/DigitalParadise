@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import {
@@ -14,8 +14,11 @@ import {
   gameItem,
 } from '@/theme';
 import Header from '@/components/layout/Header';
+import { FeedbackStateCard } from '@/components/ui';
 import { useUserStore, useProgressStore } from '@/stores';
+import { ACHIEVEMENTS } from '@/stores/useAchievementStore';
 import { achievementService } from '@/services';
+import { markPerfEnd, markPerfStart } from '@/utils';
 
 const ACHIEVEMENT_LEVELS = [
   { id: 'bronze', icon: '🥉', label: '铜牌', threshold: 1 },
@@ -37,14 +40,27 @@ interface BadgeProps {
   label: string;
   unlocked: boolean;
   color: string;
+  threshold: number;
+  completedLevels: number;
 }
 
-function Badge({ icon, label, unlocked, color }: BadgeProps) {
+function Badge({ icon, label, unlocked, color, threshold, completedLevels }: BadgeProps) {
+  const remainingLevels = Math.max(0, threshold - completedLevels);
+
   return (
-    <View style={[styles.badge, unlocked && styles.badgeUnlocked]}>
+    <View
+      style={[styles.badge, unlocked && styles.badgeUnlocked]}
+      accessible
+      accessibilityRole="text"
+      accessibilityLabel={
+        unlocked ? `${label}已解锁` : `${label}未解锁，还差${remainingLevels}关`
+      }
+    >
       <View style={[styles.badgeIconContainer, { backgroundColor: unlocked ? color : colors.locked }]}>
         <Text style={styles.badgeIcon}>{icon}</Text>
       </View>
+      <Text style={styles.badgeLabel}>{label}</Text>
+      {!unlocked && <Text style={styles.badgeHint}>还差{remainingLevels}关</Text>}
       {!unlocked && (
         <View style={styles.lockOverlay}>
           <Text style={styles.lockIcon}>🔒</Text>
@@ -58,9 +74,10 @@ interface BadgeSectionProps {
   title: string;
   color: string;
   completedLevels: number;
+  compact?: boolean;
 }
 
-function BadgeSection({ title, color, completedLevels }: BadgeSectionProps) {
+function BadgeSection({ title, color, completedLevels, compact = false }: BadgeSectionProps) {
   const getUnlockedCount = (threshold: number) => {
     return completedLevels >= threshold;
   };
@@ -68,7 +85,7 @@ function BadgeSection({ title, color, completedLevels }: BadgeSectionProps) {
   return (
     <View style={styles.badgeSection}>
       <Text style={styles.badgeSectionTitle}>{title}</Text>
-      <View style={styles.badgeGrid}>
+      <View style={[styles.badgeGrid, compact && styles.badgeGridCompact]}>
         {ACHIEVEMENT_LEVELS.map((level) => (
           <Badge
             key={level.id}
@@ -76,6 +93,8 @@ function BadgeSection({ title, color, completedLevels }: BadgeSectionProps) {
             label={level.label}
             unlocked={getUnlockedCount(level.threshold)}
             color={color}
+            threshold={level.threshold}
+            completedLevels={completedLevels}
           />
         ))}
       </View>
@@ -85,17 +104,39 @@ function BadgeSection({ title, color, completedLevels }: BadgeSectionProps) {
 
 export default function AchievementsScreen() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isCompactWidth = width < 390;
   const { currentChild } = useUserStore();
   const { totalStars, levelProgress } = useProgressStore();
   const [achievementCount, setAchievementCount] = useState(0);
+  const [isLoadingAchievements, setIsLoadingAchievements] = useState(true);
+  const [achievementError, setAchievementError] = useState<string | null>(null);
+
+  const loadAchievementCount = async () => {
+    const perfStart = markPerfStart('achievement_screen_load_ms');
+    if (!currentChild) {
+      setAchievementCount(0);
+      setIsLoadingAchievements(false);
+      setAchievementError(null);
+      markPerfEnd('achievement_screen_load_ms', perfStart);
+      return;
+    }
+
+    setIsLoadingAchievements(true);
+    setAchievementError(null);
+    try {
+      const count = await achievementService.getCountByChildId(currentChild.id);
+      setAchievementCount(count);
+    } catch (e) {
+      console.error('Failed to load achievements:', e);
+      setAchievementError('成就数据加载失败，请重试。');
+    } finally {
+      setIsLoadingAchievements(false);
+      markPerfEnd('achievement_screen_load_ms', perfStart);
+    }
+  };
 
   useEffect(() => {
-    const loadAchievementCount = async () => {
-      if (currentChild) {
-        const count = await achievementService.getCountByChildId(currentChild.id);
-        setAchievementCount(count);
-      }
-    };
     loadAchievementCount();
   }, [currentChild]);
 
@@ -124,33 +165,55 @@ export default function AchievementsScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.statsSection}>
-          <Text style={styles.statsTitle}>
-            🌟 {currentChild?.name || '小朋友'}的成就墙 🌟
-          </Text>
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>已获得</Text>
-              <Text style={styles.statValue}>{achievementCount}/20</Text>
+        {isLoadingAchievements && (
+          <FeedbackStateCard
+            type="loading"
+            title="正在加载成就墙"
+            message="马上就好，正在整理你的学习成果。"
+            style={styles.feedbackCard}
+          />
+        )}
+        {achievementError && !isLoadingAchievements && (
+          <FeedbackStateCard
+            type="error"
+            title="成就墙加载失败"
+            message={achievementError}
+            onRetry={loadAchievementCount}
+            style={styles.feedbackCard}
+          />
+        )}
+        {!isLoadingAchievements && !achievementError && (
+          <>
+            <View style={styles.statsSection}>
+              <Text style={styles.statsTitle}>
+                🌟 {currentChild?.name || '小朋友'}的成就墙 🌟
+              </Text>
+              <View style={styles.statsRow}>
+                <View style={styles.statItem}>
+                  <Text style={styles.statLabel}>已获得</Text>
+                  <Text style={styles.statValue}>{achievementCount}/{ACHIEVEMENTS.length}</Text>
+                </View>
+                <View style={styles.statDivider} />
+                <View style={styles.statItem}>
+                  <Text style={styles.statLabel}>星星总数</Text>
+                  <Text style={styles.statValue}>{totalStars}</Text>
+                </View>
+              </View>
             </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statLabel}>星星总数</Text>
-              <Text style={styles.statValue}>{totalStars}</Text>
-            </View>
-          </View>
-        </View>
 
-        <View style={styles.badgesContainer}>
-          {GAME_CATEGORIES.map((category) => (
-            <BadgeSection
-              key={category.id}
-              title={category.title}
-              color={category.color}
-              completedLevels={getCompletedLevelsByGame(category.id)}
-            />
-          ))}
-        </View>
+            <View style={styles.badgesContainer}>
+              {GAME_CATEGORIES.map((category) => (
+                <BadgeSection
+                  key={category.id}
+                  title={category.title}
+                  color={category.color}
+                  completedLevels={getCompletedLevelsByGame(category.id)}
+                  compact={isCompactWidth}
+                />
+              ))}
+            </View>
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -171,6 +234,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: pageMargin.mobile,
     paddingBottom: elementSpacing.relaxed,
   },
+  feedbackCard: {
+    marginTop: elementSpacing.normal,
+  },
   statsSection: {
     backgroundColor: colors.surface,
     borderRadius: borderRadius.xl,
@@ -189,6 +255,7 @@ const styles = StyleSheet.create({
     fontWeight: fontWeights.bold,
     color: colors.text.primary,
     marginBottom: elementSpacing.normal,
+    textAlign: 'center',
   },
   statsRow: {
     flexDirection: 'row',
@@ -233,17 +300,22 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.body.large,
     fontWeight: fontWeights.bold,
     color: colors.text.primary,
-    marginBottom: elementSpacing.small,
+    marginBottom: elementSpacing.tight,
   },
   badgeGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    rowGap: elementSpacing.tight,
+  },
+  badgeGridCompact: {
+    justifyContent: 'space-around',
   },
   badge: {
-    width: 56,
-    height: 56,
+    width: 64,
+    minHeight: 100,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     position: 'relative',
   },
   badgeUnlocked: {
@@ -260,14 +332,29 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    marginBottom: 6,
   },
   badgeIcon: {
     fontSize: 28,
   },
+  badgeLabel: {
+    fontSize: 12,
+    fontWeight: fontWeights.medium,
+    color: colors.text.primary,
+    textAlign: 'center',
+    lineHeight: 16,
+  },
+  badgeHint: {
+    marginTop: 2,
+    fontSize: 11,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    lineHeight: 14,
+  },
   lockOverlay: {
     position: 'absolute',
-    bottom: 0,
-    right: 0,
+    top: 32,
+    right: 4,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: 12,
     padding: 4,

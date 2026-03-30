@@ -46,6 +46,12 @@ const generateNumbers = (count: number): NumberBallState[] => {
 
 const DEFAULT_TOTAL_NUMBERS = 15;
 
+const getTotalNumbersByLevel = (level: number): number => {
+  if (level <= 2) return 12;
+  if (level <= 4) return 15;
+  return 18;
+};
+
 export const useSequenceGameStore = create<SequenceGameStore>((set, get) => ({
   numbers: [],
   currentNumber: 1,
@@ -56,16 +62,19 @@ export const useSequenceGameStore = create<SequenceGameStore>((set, get) => ({
   completedCount: 0,
   level: 1,
 
-  initGame: (totalNumbers = DEFAULT_TOTAL_NUMBERS) => {
-    set({
-      numbers: generateNumbers(totalNumbers),
+  initGame: (totalNumbers) => {
+    set((state) => {
+      const gameSize = totalNumbers ?? getTotalNumbersByLevel(state.level) ?? DEFAULT_TOTAL_NUMBERS;
+      return {
+      numbers: generateNumbers(gameSize),
       currentNumber: 1,
-      totalNumbers,
+      totalNumbers: gameSize,
       clickedCount: 0,
       isCompleted: false,
       isPlaying: true,
-      completedCount: 0,
-      level: 1,
+      completedCount: state.completedCount,
+      level: state.level,
+    };
     });
   },
 
@@ -123,14 +132,17 @@ export const useSequenceGameStore = create<SequenceGameStore>((set, get) => ({
   resetGame: () => {
     const state = get();
     const newCompletedCount = state.completedCount + 1;
+    const newLevel = Math.floor(newCompletedCount / 5) + 1;
+    const newTotalNumbers = getTotalNumbersByLevel(newLevel);
     set({
-      numbers: generateNumbers(state.totalNumbers),
+      numbers: generateNumbers(newTotalNumbers),
       currentNumber: 1,
+      totalNumbers: newTotalNumbers,
       clickedCount: 0,
       isCompleted: false,
       isPlaying: true,
       completedCount: newCompletedCount,
-      level: Math.floor(newCompletedCount / 5) + 1,
+      level: newLevel,
     });
   },
 

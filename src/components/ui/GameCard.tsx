@@ -7,14 +7,17 @@ import {
   Animated,
   View,
 } from 'react-native';
-import { colors, borderRadius, fontSizes, fontWeights, iconSizes } from '../../theme';
+import { colors, borderRadius, fontSizes, fontWeights, iconSizes, elementSpacing } from '../../theme';
 import { useSound } from '../../hooks';
 
 interface GameCardProps {
   icon: string;
   title: string;
-  stars: number;
+  stars?: number;
+  showStars?: boolean;
   onPress: () => void;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
   color?: string;
   style?: ViewStyle;
   disabled?: boolean;
@@ -23,8 +26,11 @@ interface GameCardProps {
 export default function GameCard({
   icon,
   title,
-  stars,
+  stars = 0,
+  showStars = true,
   onPress,
+  accessibilityLabel,
+  accessibilityHint,
   color = colors.game.count,
   style,
   disabled = false,
@@ -76,11 +82,14 @@ export default function GameCard({
         disabled={disabled}
         activeOpacity={0.9}
         style={[styles.card, disabled && styles.disabled]}
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel ?? title}
+        accessibilityHint={accessibilityHint ?? `点击进入${title}`}
       >
         <View style={[styles.colorBar, { backgroundColor: color }]} />
         <Text style={styles.icon}>{icon}</Text>
         <Text style={styles.title}>{title}</Text>
-        <View style={styles.starsContainer}>{renderStars()}</View>
+        {showStars && <View style={styles.starsContainer}>{renderStars()}</View>}
       </TouchableOpacity>
     </Animated.View>
   );
@@ -91,8 +100,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.surface,
     borderRadius: borderRadius.xl,
-    padding: 20,
-    paddingTop: 24,
+    padding: elementSpacing.normal,
+    paddingTop: elementSpacing.relaxed,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -110,14 +119,14 @@ const styles = StyleSheet.create({
     height: 4,
   },
   icon: {
-    fontSize: 48,
-    marginBottom: 8,
+    fontSize: iconSizes.medium,
+    marginBottom: elementSpacing.tight / 2,
   },
   title: {
-    fontSize: 16,
+    fontSize: fontSizes.caption,
     fontWeight: fontWeights.bold,
     color: colors.text.primary,
-    marginBottom: 8,
+    marginBottom: elementSpacing.tight / 2,
     textAlign: 'center',
   },
   starsContainer: {
@@ -127,7 +136,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   star: {
-    fontSize: 16,
+    fontSize: fontSizes.caption,
   },
   disabled: {
     opacity: 0.5,

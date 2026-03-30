@@ -31,6 +31,9 @@ export default function SettingSwitch({
         trackColor={{ false: '#E0E0E0', true: colors.primaryLight }}
         thumbColor={value ? colors.primary : '#F4F3F4'}
         style={styles.switch}
+        accessibilityLabel={label}
+        accessibilityRole="switch"
+        accessibilityHint={`当前${value ? '开启' : '关闭'}`}
       />
     </View>
   );

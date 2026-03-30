@@ -63,6 +63,8 @@ export default function BackButton({
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         activeOpacity={1}
+        accessibilityRole="button"
+        accessibilityLabel="返回上一页"
       >
         <Ionicons
           name="chevron-back"

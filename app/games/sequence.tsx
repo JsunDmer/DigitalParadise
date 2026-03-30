@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '@/components/layout/Header';
@@ -9,6 +9,7 @@ import { useSequenceGameStore } from '@/stores/useSequenceGameStore';
 import { useProgressStore, useUserStore } from '@/stores';
 import { colors, layout, spacing, borderRadius, fontSizes, fontWeights, elementSpacing } from '@/theme';
 import { useSound, useSpeech } from '@/hooks';
+import { initService } from '@/services';
 
 const BALL_SIZE = 72;
 const BALL_SPACING = 16;
@@ -16,10 +17,16 @@ const COLUMNS = 5;
 
 export default function SequenceGameScreen() {
   const router = useRouter();
+  const { width, height } = useWindowDimensions();
+  const isLandscape = width > height;
+  const columns = isLandscape ? 7 : COLUMNS;
+  const gridGap = isLandscape ? 12 : BALL_SPACING;
   const [showModal, setShowModal] = useState(false);
+  const completionSyncedRef = useRef(false);
   const { playClick, playSuccess, playError } = useSound();
   const { speakNumber, speakText } = useSpeech();
   const completeLevel = useProgressStore((state) => state.completeLevel);
+  const totalStars = useProgressStore((state) => state.totalStars);
   const currentChild = useUserStore((state) => state.currentChild);
 
   const {
@@ -35,8 +42,33 @@ export default function SequenceGameScreen() {
   } = useSequenceGameStore();
 
   useEffect(() => {
-    initGame(15);
+    initGame();
   }, [initGame]);
+
+  useEffect(() => {
+    if (!isCompleted) {
+      completionSyncedRef.current = false;
+      return;
+    }
+
+    if (completionSyncedRef.current) return;
+    completionSyncedRef.current = true;
+
+    const syncProgress = async () => {
+      if (currentChild) {
+        await initService.saveGameProgress(
+          currentChild.id,
+          'sequence',
+          level,
+          totalNumbers,
+          5,
+          true
+        );
+      }
+    };
+
+    syncProgress();
+  }, [isCompleted, currentChild, level, totalNumbers]);
 
   useEffect(() => {
     if (isCompleted) {
@@ -99,7 +131,7 @@ export default function SequenceGameScreen() {
         title="🔗 数字接龙"
         showBack
         showStars
-        starsCount={completedCount}
+        starsCount={totalStars}
         onBackPress={handleBackPress}
       />
 
@@ -122,7 +154,7 @@ export default function SequenceGameScreen() {
         </Text>
       </View>
 
-      <View style={styles.hintArea}>
+      <View style={[styles.hintArea, isLandscape && styles.hintAreaLandscape]}>
         <Text style={styles.hintTitle}>按顺序点击数字！</Text>
         <View style={styles.nextNumberContainer}>
           <Text style={styles.nextNumberLabel}>下一个: </Text>
@@ -131,7 +163,17 @@ export default function SequenceGameScreen() {
       </View>
 
       <View style={styles.gameArea}>
-        <View style={styles.gridContainer}>{renderNumberBalls()}</View>
+        <View
+          style={[
+            styles.gridContainer,
+            {
+              gap: gridGap,
+              maxWidth: columns * (BALL_SIZE + gridGap),
+            },
+          ]}
+        >
+          {renderNumberBalls()}
+        </View>
       </View>
 
       <CompletionModal
@@ -215,6 +257,10 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  hintAreaLandscape: {
+    height: 86,
+    marginTop: spacing.sm,
+  },
   hintTitle: {
     fontSize: fontSizes.body.large,
     fontWeight: fontWeights.bold,
@@ -247,6 +293,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: BALL_SPACING,
-    maxWidth: COLUMNS * (BALL_SIZE + BALL_SPACING),
   },
 });

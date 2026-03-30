@@ -143,7 +143,7 @@ export const useProgressStore = create<ProgressState>()(
           const completedProgress = progressList.filter(p => p.completed);
           
           const levelProgress = completedProgress.map(p => ({
-            levelId: p.gameId,
+            levelId: `${p.gameId}-${p.level}`,
             completed: p.completed,
             stars: p.stars,
             completedAt: p.updatedAt,
@@ -156,7 +156,7 @@ export const useProgressStore = create<ProgressState>()(
             totalStars,
             completedLevels,
             levelProgress,
-            learnedNumbers: [],
+            learnedNumbers: get().learnedNumbers,
             isLoaded: true,
           });
         } catch (error) {

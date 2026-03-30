@@ -85,6 +85,9 @@ export default function GameItem({
       disabled={disabled || isClicked}
       activeOpacity={0.8}
       style={style}
+      accessibilityRole="button"
+      accessibilityLabel={`计数物品${icon}`}
+      accessibilityHint={isClicked ? '该物品已被点击' : '点击进行计数'}
     >
       <Animated.View
         style={[

@@ -94,6 +94,9 @@ export default function NumberCard({
       disabled={disabled || isClicked}
       activeOpacity={0.8}
       style={style}
+      accessibilityRole="button"
+      accessibilityLabel={`数字卡片${number}`}
+      accessibilityHint={isMatched ? '已匹配成功' : '点击翻开并尝试配对'}
     >
       <View style={styles.container}>
         <Animated.View

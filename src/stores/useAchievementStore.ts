@@ -108,6 +108,7 @@ interface AchievementState {
     learnedNumbers: number;
     perfectScores: number;
     fastCompletions: number;
+    firstGamesCompleted: number;
   }) => Promise<string[]>;
 }
 
@@ -188,6 +189,7 @@ export const useAchievementStore = create<AchievementState>((set, get) => ({
     await checkAndUnlock('star_collector_10', stats.totalStars >= 10);
     await checkAndUnlock('star_collector_50', stats.totalStars >= 50);
     await checkAndUnlock('star_collector_100', stats.totalStars >= 100);
+    await checkAndUnlock('first_game', stats.firstGamesCompleted >= 1);
     await checkAndUnlock('level_master_5', stats.completedLevels >= 5);
     await checkAndUnlock('level_master_20', stats.completedLevels >= 20);
     await checkAndUnlock('number_learner_5', stats.learnedNumbers >= 5);

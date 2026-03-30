@@ -1,12 +1,13 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  Dimensions,
+  useWindowDimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, {
   useAnimatedStyle,
   withSequence,
@@ -19,13 +20,12 @@ import CompletionModal from '@/components/game/CompletionModal';
 import { useMatchingGameStore, useProgressStore, useUserStore } from '@/stores';
 import { useSound, useSpeech } from '@/hooks';
 import { colors, layout, spacing, borderRadius, fontSizes, fontWeights } from '@/theme';
-
-const { width, height } = Dimensions.get('window');
+import { initService } from '@/services';
 const CARD_GAP = 12;
 const GRID_PADDING = 16;
 
 // 计算卡片尺寸，适配横屏和竖屏
-const calculateCardDimensions = () => {
+const calculateCardDimensions = (width: number, height: number) => {
   const isLandscape = width > height;
   const columns = isLandscape ? 8 : 4; // 横屏8列，竖屏4列
   const rows = isLandscape ? 2 : 4;    // 横屏2行，竖屏4行
@@ -42,8 +42,6 @@ const calculateCardDimensions = () => {
 
   return { cardSize, columns };
 };
-
-const { cardSize: CARD_SIZE, columns: COLUMNS } = calculateCardDimensions();
 
 interface ShakingCardProps {
   children: React.ReactNode;
@@ -74,9 +72,10 @@ function ShakingCard({ children, isShaking }: ShakingCardProps) {
 
 export default function MatchingGameScreen() {
   const router = useRouter();
-  const [starsCount, setStarsCount] = useState(0);
+  const { width, height } = useWindowDimensions();
   const [lastMatchedCount, setLastMatchedCount] = useState(0);
-  const { playClick, playSuccess, playError } = useSound();
+  const completionSyncedRef = useRef(false);
+  const { playClick, playSuccess } = useSound();
   const { speakNumber, speakText } = useSpeech();
   const completeLevel = useProgressStore((state) => state.completeLevel);
   const currentChild = useUserStore((state) => state.currentChild);
@@ -85,6 +84,8 @@ export default function MatchingGameScreen() {
     cards,
     matchedPairs,
     totalPairs,
+    completedRounds,
+    level,
     moves,
     isCompleted,
     lastMatchedNumber,
@@ -93,11 +94,41 @@ export default function MatchingGameScreen() {
     resetGame,
   } = useMatchingGameStore();
 
+  const { cardSize: cardSize, columns } = useMemo(
+    () => calculateCardDimensions(width, height),
+    [width, height]
+  );
+
   useEffect(() => {
     initializeGame();
   }, [initializeGame]);
 
   // 监听配对成功
+  useEffect(() => {
+    if (!isCompleted) {
+      completionSyncedRef.current = false;
+      return;
+    }
+
+    if (completionSyncedRef.current) return;
+    completionSyncedRef.current = true;
+
+    const syncProgress = async () => {
+      if (currentChild) {
+        await initService.saveGameProgress(
+          currentChild.id,
+          'matching',
+          level,
+          Math.max(0, totalPairs * 2 - moves),
+          calculateRoundStars(moves),
+          true
+        );
+      }
+    };
+
+    syncProgress();
+  }, [isCompleted, currentChild, level, moves, totalPairs]);
+
   useEffect(() => {
     if (matchedPairs > lastMatchedCount) {
       // 播放成功音效和语音播报
@@ -109,14 +140,14 @@ export default function MatchingGameScreen() {
     }
 
     if (isCompleted) {
-      // 保存进度：完成一关加1颗星
-      if (currentChild) {
-        completeLevel('matching-1', 1);
+      // 每完成5次算一关，达到5次倍数时保存进度
+      if (currentChild && (completedRounds + 1) % 5 === 0) {
+        completeLevel(`matching-${level}`, 1);
       }
 
       speakText('太棒了！你完成了所有配对！');
     }
-  }, [matchedPairs, isCompleted, lastMatchedCount, playSuccess, speakNumber, speakText, lastMatchedNumber, currentChild, completeLevel]);
+  }, [matchedPairs, isCompleted, lastMatchedCount, playSuccess, speakNumber, speakText, lastMatchedNumber, currentChild, completeLevel, completedRounds, level]);
 
   const handleBackPress = () => {
     router.back();
@@ -127,9 +158,13 @@ export default function MatchingGameScreen() {
     flipCard(cardId);
   };
 
+  const calculateRoundStars = (currentMoves: number) => {
+    return Math.min(5, Math.max(1, 6 - Math.floor(currentMoves / 8)));
+  };
+
+  const realtimeStars = moves === 0 ? 0 : calculateRoundStars(moves);
+
   const handleContinue = () => {
-    const stars = Math.min(5, Math.max(1, 6 - Math.floor(moves / 8)));
-    setStarsCount(stars);
     resetGame();
   };
 
@@ -140,12 +175,12 @@ export default function MatchingGameScreen() {
   const remainingPairs = totalPairs - matchedPairs;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <Header
         title="🎯 数字配对"
         showBack
         showStars
-        starsCount={starsCount}
+        starsCount={realtimeStars}
         onBackPress={handleBackPress}
       />
 
@@ -164,7 +199,7 @@ export default function MatchingGameScreen() {
               key={card.id}
               style={[
                 styles.cardWrapper,
-                { marginRight: (index + 1) % COLUMNS === 0 ? 0 : CARD_GAP },
+                { marginRight: (index + 1) % columns === 0 ? 0 : CARD_GAP },
               ]}
             >
               <ShakingCard isShaking={card.isShaking}>
@@ -174,7 +209,7 @@ export default function MatchingGameScreen() {
                   isMatched={card.isMatched}
                   onPress={() => handleCardPress(card.id)}
                   disabled={card.isMatched}
-                  style={{ width: CARD_SIZE, height: CARD_SIZE * 1.2 }}
+                  style={{ width: cardSize, height: cardSize * 1.2 }}
                 />
               </ShakingCard>
             </View>
@@ -186,12 +221,12 @@ export default function MatchingGameScreen() {
         visible={isCompleted}
         title="太棒了！"
         description={`你用 ${moves} 步完成了配对！`}
-        stars={Math.min(5, Math.max(1, 6 - Math.floor(moves / 8)))}
+        stars={calculateRoundStars(moves)}
         buttonText="继续挑战"
         onClose={handleClose}
         onContinue={handleContinue}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 

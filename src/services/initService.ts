@@ -151,9 +151,12 @@ export const initService = {
           totalStars,
           completedLevels: completedCount,
           learnedNumbers: useProgressStore.getState().learnedNumbers.length,
-          perfectScores: stars === 3 ? 1 : 0,
+          perfectScores: stars >= 5 ? 1 : 0,
           fastCompletions: 0,
+          firstGamesCompleted: completedCount,
         });
+
+        await useProgressStore.getState().loadProgress(childId);
       }
     } catch (error) {
       console.error('Failed to save game progress:', error);
