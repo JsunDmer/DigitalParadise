@@ -2,10 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import Header from '@/src/components/layout/Header';
-import { SettingSwitch } from '@/src/components/ui';
-import { useSettingsStore } from '@/src/stores/useSettingsStore';
-import { colors, spacing, fontSizes, fontWeights } from '@/src/theme';
+import Header from '@/components/layout/Header';
+import { SettingSwitch } from '@/components/ui';
+import { useSettingsStore } from '@/stores/useSettingsStore';
+import { colors, spacing, fontSizes, fontWeights } from '@/theme';
 
 export default function SettingsScreen() {
   const router = useRouter();

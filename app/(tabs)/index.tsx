@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { colors, fontSizes, fontWeights, elementSpacing, pageMargin, layout, iconSizes } from '@/theme';
-import { GameCard } from '@/src/components/ui';
+import { GameCard } from '@/components/ui';
 
 const GAMES = [
   { id: 'counting', icon: '🔢', title: '数数乐园', color: colors.game.count, route: '/games/counting' },
