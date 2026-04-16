@@ -45,19 +45,11 @@ export default function TabsLayout() {
           tabBarIcon: ({ color }) => <Ionicons name="home" color={color} size={28} />,
         }}
       />
-
       <Tabs.Screen
-        name="achievements"
+        name="settings"
         options={{
-          title: '成就',
-          tabBarIcon: ({ color }) => <Ionicons name="trophy" color={color} size={28} />,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: '我的',
-          tabBarIcon: ({ color }) => <Ionicons name="person" color={color} size={28} />,
+          title: '设置',
+          tabBarIcon: ({ color }) => <Ionicons name="settings" color={color} size={28} />,
         }}
       />
     </Tabs>
