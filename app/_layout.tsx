@@ -75,6 +75,7 @@ export default function RootLayout() {
       <Stack.Screen name="games/counting" options={{ headerShown: false }} />
       <Stack.Screen name="games/sequence" options={{ headerShown: false, animation: 'slide_from_right' }} />
       <Stack.Screen name="games/addition" options={{ headerShown: false, animation: 'slide_from_right' }} />
+      <Stack.Screen name="games/compare" options={{ headerShown: false, animation: 'slide_from_right' }} />
     </Stack>
   );
 }

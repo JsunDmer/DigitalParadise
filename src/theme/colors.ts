@@ -11,6 +11,7 @@ export const colors = {
     match: '#F5A623',
     sequence: '#7ED321',
     addition: '#9013FE',
+    compare: '#00CEC9',
   },
 
   background: '#FFF9F0',

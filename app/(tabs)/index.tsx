@@ -8,7 +8,7 @@ import { GameCard } from '@/components/ui';
 const GAMES = [
   { id: 'counting', icon: '🔢', title: '数数乐园', color: colors.game.count, route: '/games/counting' },
   { id: 'matching', icon: '🎯', title: '数字配对', color: colors.game.match, route: '/matching-game' },
-  { id: 'sequence', icon: '🔗', title: '数字接龙', color: colors.game.sequence, route: '/games/sequence' },
+  { id: 'compare', icon: '⚖️', title: '比大小', color: colors.game.compare, route: '/games/compare' },
   { id: 'addition', icon: '➕', title: '趣味加法', color: colors.game.addition, route: '/games/addition' },
 ];
 
