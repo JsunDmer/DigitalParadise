@@ -107,7 +107,7 @@ export default function CountingGame() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <Header title="🔢 数数乐���" showBack onBackPress={handleBack} />
+      <Header title="🔢 数数乐园" showBack onBackPress={handleBack} />
 
       <View style={[styles.targetCard, isLandscape && styles.targetCardLandscape]}>
         <Text style={styles.targetLabel}>请 数 到</Text>
