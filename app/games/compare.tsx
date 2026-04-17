@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -8,18 +8,10 @@ import CompletionModal from '@/components/game/CompletionModal';
 import { useSound, useSpeech } from '@/hooks';
 
 const ITEM_ICONS = ['🍎', '🍊', '🍋', '🍇', '🍓', '⭐'];
-const STREAK_TO_UPGRADE = 3;
 
-const getRangeByLevel = (level: number): { min: number; max: number } => {
-  if (level === 1) return { min: 1, max: 5 };
-  if (level === 2) return { min: 1, max: 10 };
-  return { min: 1, max: 20 };
-};
-
-const generatePair = (level: number): { left: number; right: number } => {
-  const range = getRangeByLevel(level);
-  const min = range.min;
-  const max = range.max;
+const generatePair = (): { left: number; right: number } => {
+  const min = 1;
+  const max = 10;
   const num1 = Math.floor(Math.random() * (max - min + 1)) + min;
   let num2 = Math.floor(Math.random() * (max - min + 1)) + min;
   while (num1 === num2) {
@@ -40,15 +32,13 @@ export default function CompareGame() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isWide = width > 500;
-  const [level, setLevel] = useState(1);
-  const [streak, setStreak] = useState(0);
-  const [pair, setPair] = useState(generatePair(1));
+  const [pair, setPair] = useState(generatePair());
   const [selectedSide, setSelectedSide] = useState<'left' | 'right' | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [totalCorrect, setTotalCorrect] = useState(0);
   const [itemIcon] = useState(ITEM_ICONS[Math.floor(Math.random() * ITEM_ICONS.length)]);
-  const { playClick, playSuccess, playError } = useSound();
+  const { playSuccess, playError } = useSound();
   const { speakText } = useSpeech();
 
   const correctAnswer = pair.left > pair.right ? 'left' : 'right';
@@ -61,49 +51,28 @@ export default function CompareGame() {
 
     if (isAnswerCorrect) {
       playSuccess();
-      const newStreak = streak + 1;
-      setStreak(newStreak);
       setTotalCorrect(totalCorrect + 1);
-      if (newStreak >= STREAK_TO_UPGRADE) {
-        const newLevel = Math.min(level + 1, 3);
-        setLevel(newLevel);
-        setStreak(0);
-      }
       speakText('正确！');
       setTimeout(() => {
-        const newPair = generatePair(level);
-        setPair(newPair);
+        setPair(generatePair());
         setSelectedSide(null);
         setIsCorrect(null);
       }, 1000);
     } else {
       playError();
       speakText('再试试！');
-      setStreak(0);
       setTimeout(() => {
         setShowModal(true);
       }, 1000);
     }
-  }, [selectedSide, correctAnswer, streak, level, totalCorrect, playSuccess, playError, speakText]);
+  }, [selectedSide, correctAnswer, totalCorrect, playSuccess, playError, speakText]);
 
   const handleBack = () => router.back();
 
-  const handleContinue = () => {
-    setShowModal(false);
-    setLevel(1);
-    setStreak(0);
-    setTotalCorrect(0);
-    setPair(generatePair(1));
-    setSelectedSide(null);
-    setIsCorrect(null);
-  };
-
   const handleRestart = () => {
     setShowModal(false);
-    setLevel(1);
-    setStreak(0);
     setTotalCorrect(0);
-    setPair(generatePair(1));
+    setPair(generatePair());
     setSelectedSide(null);
     setIsCorrect(null);
   };
@@ -114,13 +83,6 @@ export default function CompareGame() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <Header title="⚖️ 比大小" showBack onBackPress={handleBack} />
-
-      <View style={styles.progressBar}>
-        <Text style={styles.progressText}>难度 {level} · 连续正确 {streak}/{STREAK_TO_UPGRADE}</Text>
-        <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${(streak / STREAK_TO_UPGRADE) * 100}%` }]} />
-        </View>
-      </View>
 
       <View style={[styles.content, isWide && styles.contentWide]}>
         <Text style={styles.questionText}>哪边物品更多？</Text>
@@ -163,7 +125,7 @@ export default function CompareGame() {
         stars={0}
         buttonText="再玩一次"
         onClose={handleRestart}
-        onContinue={handleContinue}
+        onContinue={handleRestart}
       />
     </SafeAreaView>
   );
@@ -171,10 +133,6 @@ export default function CompareGame() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  progressBar: { paddingHorizontal: elementSpacing.normal, paddingVertical: elementSpacing.tight },
-  progressText: { fontSize: fontSizes.body.medium, color: colors.text.secondary, marginBottom: 8, textAlign: 'center' },
-  progressTrack: { height: 8, backgroundColor: colors.surface, borderRadius: 4, overflow: 'hidden' },
-  progressFill: { height: 8, backgroundColor: colors.game.match, borderRadius: 4 },
   content: { flex: 1, padding: elementSpacing.normal, justifyContent: 'center' },
   contentWide: { flexDirection: 'row', alignItems: 'center' },
   questionText: { fontSize: fontSizes.title.small, fontWeight: fontWeights.bold, color: colors.text.primary, textAlign: 'center', marginBottom: elementSpacing.xl },
